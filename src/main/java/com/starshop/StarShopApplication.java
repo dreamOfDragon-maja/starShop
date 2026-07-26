@@ -15,4 +15,3 @@ public class StarShopApplication {
         SpringApplication.run(StarShopApplication.class, args);
     }
 }
-public

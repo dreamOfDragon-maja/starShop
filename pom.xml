@@ -21,6 +21,7 @@
         <java.version>17</java.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <hutool.version>5.8.29</hutool.version>
+        <jjwt>0.9.1</jjwt>
     </properties>
 
     <dependencies>
@@ -69,22 +70,9 @@
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.12.6</version>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt}</version>
         </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

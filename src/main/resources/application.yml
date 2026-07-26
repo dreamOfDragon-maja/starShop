@@ -32,6 +32,19 @@ mybatis-plus:
     # SQL 日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+app:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: {app.jwt.admin-secret-key}
+    # 设置jwt过期时间
+    admin-ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+    user-secret-key: {app.jwt.user-secret-key}
+    user-ttl: 7200000
+    user-token-name: authentication
+
+
 # 日志
 logging:
   level:

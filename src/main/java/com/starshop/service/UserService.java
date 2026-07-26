@@ -1,0 +1,15 @@
+package com.starshop.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.starshop.pojo.dto.UserLoginDTO;
+import com.starshop.pojo.entity.User;
+import com.starshop.result.Result;
+
+public interface UserService extends IService<User> {
+    /**
+     * 新用户注册账号
+     * @param userLoginDTO
+     * @return
+     */
+    Result register(UserLoginDTO userLoginDTO);
+}

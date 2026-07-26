@@ -20,7 +20,6 @@ public class JwtUtils {
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
         //生成JWT时间
         long l = System.currentTimeMillis() + ttlMillis;
-        //将long放进Data
         Date date = new Date(l);
         //构造结果返回
         return Jwts.builder()

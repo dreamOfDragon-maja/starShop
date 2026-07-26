@@ -1,49 +1,25 @@
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+
 server:
   port: 8080
 
-spring:
-  application:
-    name: star-shop
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/star_shop?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${starShop.datasource.username}
-    password: ${starShop.datasource.password}
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: Asia/Shanghai
-    default-property-inclusion: non_null
-
-# MyBatis-Plus 配置
+# MyBatis-Plus 全局通用配置
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.starshop.entity
   global-config:
     db-config:
-      # 逻辑删除
       logic-delete-field: isDeleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-      # 主键策略
       id-type: auto
   configuration:
-    # 下划线转驼峰
     map-underscore-to-camel-case: true
-    # SQL 日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-app:
-  jwt:
-    # 设置jwt签名加密时使用的秘钥
-    admin-secret-key: {app.jwt.admin-secret-key}
-    # 设置jwt过期时间
-    admin-ttl: 7200000
-    # 设置前端传递过来的令牌名称
-    admin-token-name: token
-    user-secret-key: {app.jwt.user-secret-key}
-    user-ttl: 7200000
-    user-token-name: authentication
-
 
 # 日志
 logging:

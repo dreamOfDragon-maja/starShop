@@ -1,6 +1,7 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starshop.common.annotation.Validate;
 import com.starshop.common.creation.NicknameCreation;
 import com.starshop.constant.MessageConstant;
 import com.starshop.mapper.UserMapper;
@@ -24,6 +25,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     @Transactional
+    @Validate
     public Result register(UserLoginDTO userLoginDTO) {
         //1.根据username查询数据库
         User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();

@@ -2,6 +2,7 @@ package com.starshop.controller.user;
 
 
 import com.starshop.pojo.dto.UserLoginDTO;
+import com.starshop.pojo.vo.UserLoginVO;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
@@ -28,5 +29,17 @@ public class LoginController {
     public Result register(@RequestBody UserLoginDTO userLoginDTO){
         log.info("新用户注册账号{}",userLoginDTO);
         return userService.register(userLoginDTO);
+    }
+
+    /**
+     * 用户登录
+     * @param userLoginDTO
+     * @return
+     */
+    @PostMapping("/login")
+    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
+        log.info("用户登录{}",userLoginDTO);
+        UserLoginVO userLoginVO = userService.login(userLoginDTO);
+        return Result.success(userLoginVO);
     }
 }

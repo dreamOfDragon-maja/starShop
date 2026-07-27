@@ -10,4 +10,6 @@ public class MessageConstant {
     public static final String PASSWORD_LENGTH_ERROR = "密码长度必须在6-20位之间";
     public static final String PHONE_NOT_EMPTY = "手机号不能为空";
     public static final String PHONE_PATTERN_ERROR = "手机号格式不正确";
+    public static final String USER_NOT_EXISTS = "用户不存在";
+    public static final String PASSWORD_ERROR = "密码错误";
 }

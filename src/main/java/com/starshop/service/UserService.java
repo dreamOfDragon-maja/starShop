@@ -3,6 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.entity.User;
+import com.starshop.pojo.vo.UserLoginVO;
 import com.starshop.result.Result;
 
 public interface UserService extends IService<User> {
@@ -12,4 +13,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     Result register(UserLoginDTO userLoginDTO);
+
+    /**
+     * 用户登录
+     * @param userLoginDTO
+     * @return
+     */
+    UserLoginVO login(UserLoginDTO userLoginDTO) throws Exception;
 }

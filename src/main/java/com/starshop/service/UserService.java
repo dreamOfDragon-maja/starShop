@@ -5,6 +5,7 @@ import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.entity.User;
 import com.starshop.pojo.vo.UserLoginVO;
 import com.starshop.result.Result;
+import jakarta.validation.constraints.NotBlank;
 
 public interface UserService extends IService<User> {
     /**
@@ -20,4 +21,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     UserLoginVO login(UserLoginDTO userLoginDTO) throws Exception;
+
+    /**
+     * 刷新token
+     * @param refreshToken
+     * @return
+     */
+    Result refreshToken(@NotBlank String refreshToken);
 }

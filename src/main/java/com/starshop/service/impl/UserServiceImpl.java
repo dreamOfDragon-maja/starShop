@@ -15,22 +15,63 @@ import com.starshop.properties.JwtProperties;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
+import lombok.Setter;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    private static final String ACCESS_TOKEN = "accessToken";
+    private static final String REFRESH_TOKEN = "refreshToken";
     @Resource
     private JwtProperties jwtProperties;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    // 由配置类注入
+    @Setter
+    private static RedisTemplate<String, Object> redisTemplate;
+
+    /**
+     * 刷新token
+     * @param refreshToken
+     * @return
+     */
+    @Override
+    public Result refreshToken(String refreshToken) {
+        //1.从redis中获取refreshToken的信息
+        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.REFRESH + RedisKeyConstant.TOKEN +refreshToken;
+        Map<String, Object> refreshTokenMap = opsForHash().entries(key);
+        //2.判断是否为空，如果为空，返回错误信息
+        if(refreshTokenMap.isEmpty()){
+            return Result.error(MessageConstant.REFRESH_TOKEN_EXPIRED_ERROR);
+        }
+        //3.生成新的accessToken
+        String accessTokenNew = JwtUtils.createJWT(jwtProperties.getUserSecretKey(), jwtProperties.getUserTtl(), refreshTokenMap);
+        //4.从refreshTokenMap里面获取userId
+        Long userId = Long.valueOf(refreshTokenMap.get(JwtClaimsConstant.USER_ID).toString());
+        //5，删除旧的refreshToken
+        stringRedisTemplate.delete(key);
+        //6.生成新的的refreshToken
+        User user = User.builder().id(userId).build();
+        String refreshTokenNew = getRefreshToken(user);
+        //7.封装信息组装
+        HashMap<String, Object> resultMap = new HashMap<>(2);
+        resultMap.put(ACCESS_TOKEN,accessTokenNew);
+        resultMap.put(REFRESH_TOKEN,refreshTokenNew);
+        return Result.success(resultMap);
+    }
+
 
 
     /**
@@ -50,24 +91,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!BCrypt.checkpw(userLoginDTO.getPassword(),user.getPassword())) {
             throw new Exception(MessageConstant.PASSWORD_ERROR);
         }
-        //4.信息正确则生成token
+        //4.信息正确则生成accessToken
         Long userId = user.getId();
         HashMap<String, Object> map = new HashMap<>();
         map.put(JwtClaimsConstant.USER_NAME,user.getUsername());
         map.put(JwtClaimsConstant.USER_ID, userId);
         long userTtl = jwtProperties.getUserTtl();
-        String token = JwtUtils.createJWT(jwtProperties.getUserSecretKey(), userTtl, map);
+        String accessToken = JwtUtils.createJWT(jwtProperties.getUserSecretKey(), userTtl, map);
 
-        //5.将生成的token存入redis
-        String key = RedisKeyConstant.REDIS_TOKEN_PREFIX + userId;
+        //5.生成refreshToken
+        String refreshToken = getRefreshToken(user);
 
-        stringRedisTemplate.opsForValue().set(key,token,userTtl, TimeUnit.MILLISECONDS);
+        //6.将生成的token存入redis
+        String key = RedisKeyConstant.TOKEN + userId;
 
-        //6.组装VO返回结果
+        stringRedisTemplate.opsForValue().set(key,accessToken,userTtl, TimeUnit.MILLISECONDS);
+
+        //7.组装VO返回结果
         return UserLoginVO.builder()
-               .id(user.getId())
-               .token(token)
-               .build();
+                .id(user.getId())
+                .token(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     /**
@@ -104,5 +149,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //4.返回结果
         return Result.success();
+    }
+
+    /**
+     * 获取 Redis Hash 操作对象
+     * @return
+     */
+    public static HashOperations<String, String, Object> opsForHash() {
+        return redisTemplate.opsForHash();
+    }
+    //刷新 token 格式: UUID
+    private String getRefreshToken(User user) {
+        String refreshToken = UUID.randomUUID().toString();
+        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.REFRESH + RedisKeyConstant.TOKEN +refreshToken;
+        HashMap<String, Object> map = new HashMap<>(1);
+        map.put(JwtClaimsConstant.USER_ID, String.valueOf(user.getId()));
+        stringRedisTemplate.opsForHash().putAll(key, map);
+        stringRedisTemplate.expire(key, jwtProperties.getLoginRefreshTokenTtl(), TimeUnit.DAYS);
+        return refreshToken;
     }
 }

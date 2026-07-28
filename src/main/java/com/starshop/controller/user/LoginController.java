@@ -6,11 +6,9 @@ import com.starshop.pojo.vo.UserLoginVO;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -41,5 +39,16 @@ public class LoginController {
         log.info("用户登录{}",userLoginDTO);
         UserLoginVO userLoginVO = userService.login(userLoginDTO);
         return Result.success(userLoginVO);
+    }
+
+    /**
+     * 刷新token
+     * @param refreshToken
+     * @return
+     */
+    @PostMapping("/refresh/token")
+    public Result refreshToken(@RequestParam String refreshToken){
+        log.info("刷新token{}",refreshToken);
+        return userService.refreshToken(refreshToken);
     }
 }

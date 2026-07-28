@@ -9,5 +9,6 @@ public class UserLoginVO {
 
     private Long id;
     private String token;
+    private String refreshToken;
 
 }

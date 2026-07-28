@@ -23,4 +23,14 @@ public class JwtProperties {
     private long userTtl;
     private String userTokenName;
 
+    /**
+     * redis 存储用户信息(角色..权限)过期时间
+     */
+    private long loginUserInfoInRedisTtl;
+
+    /***
+     * redis 存储刷新 token 过期时间
+     */
+    private long loginRefreshTokenTtl;
+
 }

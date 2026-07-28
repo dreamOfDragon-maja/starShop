@@ -1,11 +1,14 @@
 package com.starshop.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.starshop.pojo.vo.UserVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
@@ -13,7 +16,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("sys_user")
-public class User {
+@FieldNameConstants
+public class User implements Serializable {
 
     @TableId(type = IdType.AUTO)  // 自增主键
     private Long id;
@@ -37,6 +41,12 @@ public class User {
      */
     @Builder.Default
     private Integer userType = 3;
+
+    /**
+     * 用户简单登录信息
+     */
+    @TableField(exist = false)
+    private UserVO userVO;
 
     /**
      * 是否启用：0-禁用，1-启用（默认）

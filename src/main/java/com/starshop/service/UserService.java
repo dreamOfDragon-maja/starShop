@@ -3,7 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.entity.User;
-import com.starshop.pojo.vo.UserLoginVO;
+import com.starshop.pojo.vo.UserVO;
 import com.starshop.result.Result;
 import jakarta.validation.constraints.NotBlank;
 
@@ -20,7 +20,7 @@ public interface UserService extends IService<User> {
      * @param userLoginDTO
      * @return
      */
-    UserLoginVO login(UserLoginDTO userLoginDTO) throws Exception;
+    Result<Object> login(UserLoginDTO userLoginDTO) throws Exception;
 
     /**
      * 刷新token
@@ -28,4 +28,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     Result refreshToken(@NotBlank String refreshToken);
+
+    /**
+     * 获取当前用户信息
+     * @return
+     */
+    Result<UserVO> getUser();
+
 }

@@ -2,11 +2,10 @@ package com.starshop.controller.user;
 
 
 import com.starshop.pojo.dto.UserLoginDTO;
-import com.starshop.pojo.vo.UserLoginVO;
+import com.starshop.pojo.vo.UserVO;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
-import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,10 +34,9 @@ public class LoginController {
      * @return
      */
     @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
+    public Result<Object> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
         log.info("用户登录{}",userLoginDTO);
-        UserLoginVO userLoginVO = userService.login(userLoginDTO);
-        return Result.success(userLoginVO);
+        return userService.login(userLoginDTO);
     }
 
     /**
@@ -51,4 +49,15 @@ public class LoginController {
         log.info("刷新token{}",refreshToken);
         return userService.refreshToken(refreshToken);
     }
+
+    /**
+     * 获取当前用户信息
+     * @return
+     */
+    @GetMapping("/info")
+    public Result<UserVO> getUser(){
+        return userService.getUser();
+    }
+
+
 }

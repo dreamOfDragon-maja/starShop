@@ -1,0 +1,25 @@
+package com.starshop.pojo.emums;
+
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+
+@Getter
+public enum CommonStatus {
+    ACTIVE("active",1,"启用"),
+    INACTIVE("inactive",0,"禁用");
+
+    @JsonValue
+    private final String value;
+    @EnumValue
+    private final Integer number;
+
+    private final String desc;
+
+
+    CommonStatus(String value, Integer number, String desc) {
+        this.value = value;
+        this.number = number;
+        this.desc = desc;
+    }
+}

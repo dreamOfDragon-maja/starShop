@@ -42,4 +42,23 @@ public interface UserService extends IService<User> {
      * @return
      */
     Result<UserVO> updateUserInfo(UserUpdateDTO userUpdateDTO);
+
+    /**
+     * 修改密码
+     * @param username
+     * @param passwordOld
+     * @param passwordNew
+     * @return
+     */
+    Result changePassword(String username, String passwordOld, String passwordNew);
+
+
+    /**
+     * 忘记密码
+     * @param username
+     * @param phone
+     * @param passwordNew
+     * @return
+     */
+    Result forgetPassword(String username, String phone, String passwordNew);
 }

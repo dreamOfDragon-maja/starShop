@@ -8,4 +8,6 @@ public class RedisKeyConstant {
     public static final String USER_ID = "userId";
     public static final String FIELD_ACCESS_TOKEN = "accessToken";
     public static final String FIELD_REFRESH_TOKEN = "refreshToken";
+    public static final String USER = "user";
+
 }

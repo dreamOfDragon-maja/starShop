@@ -60,12 +60,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 忘记密码
+     * @param username
+     * @param phone
+     * @param passwordNew
+     * @return
+     */
+    @Override
+    @Validate(requiredPhone = true)
+    public Result forgetPassword(String username, String phone, String passwordNew) {
+        //1.根据username和phone查询一个用户
+        User user = lambdaQuery().eq(User::getUsername, username).eq(User::getPhone, phone).one();
+        //2.判断是否存在
+        if(Objects.isNull(user)){
+            return Result.error(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+        //3.设置新密码
+        String passwordOld = user.getPassword();
+        if(BCrypt.checkpw(passwordNew,passwordOld)){
+            return Result.error(MessageConstant.ERROR_NEW_PASSWORD_SAME_AS_OLD);
+        }
+        String hashpw = BCrypt.hashpw(passwordNew, BCrypt.gensalt());
+        user.setPassword(hashpw);
+
+        //4.更新到数据库
+        boolean isSuccess = updateById(user);
+        if(!isSuccess){
+            return Result.error(MessageConstant.PASSWORD_MODIFY_ERROR);
+        }
+        return Result.success(user.getId());
+    }
+
+    /**
+     * 修改密码
+     * @param username
+     * @param passwordOld
+     * @param passwordNew
+     * @return
+     */
+    @Override
+    @Validate
+    public Result changePassword(String username, String passwordOld, String passwordNew) {
+        //1.查询用户
+        User user = lambdaQuery().eq(User::getUsername, username).one();
+        //2.业务判断
+        if(Objects.isNull(user)){
+            return Result.error(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+        if(!BCrypt.checkpw(passwordOld,user.getPassword())){
+            return Result.error(MessageConstant.LOGIN_ERROR);
+        }
+        //3.设置新密码
+        String hashpw = BCrypt.hashpw(passwordNew, BCrypt.gensalt());
+        user.setPassword(hashpw);
+
+        //4.更新到数据库
+        boolean isSuccess = updateById(user);
+        if(!isSuccess){
+            return Result.error(MessageConstant.PASSWORD_MODIFY_ERROR);
+        }
+        return Result.success(user.getId());
+    }
+
+    /**
      * 更新用户信息
      * @param userUpdateDTO
      * @return
      */
     @Override
     @Transactional
+    @Validate
     public Result<UserVO> updateUserInfo(UserUpdateDTO userUpdateDTO) {
         //1.查询当前用户
         Long userId = BaseContext.getCurrentId();
@@ -130,6 +194,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
+    @Validate
     public Result<Object> login(UserLoginDTO userLoginDTO) throws Exception {
         //1.查询用户
         User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();

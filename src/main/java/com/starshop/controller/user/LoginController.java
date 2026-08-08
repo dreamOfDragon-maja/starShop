@@ -1,6 +1,9 @@
 package com.starshop.controller.user;
 
 
+import com.starshop.constant.RedisKeyConstant;
+import com.starshop.context.BaseContext;
+import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.vo.UserVO;
@@ -66,9 +69,53 @@ public class LoginController {
      * @return
      */
     @PutMapping("/info")
+
     public Result<UserVO> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
         log.info("更新用户信息{}",userUpdateDTO);
         return userService.updateUserInfo(userUpdateDTO);
+    }
+
+    /**
+     * 退出登录
+     * @return
+     */
+    @PostMapping("/logout")
+    public Result logout(){
+        String userId = BaseContext.getCurrentId().toString();
+        String key = RedisKeyConstant.PREFIX_LOGIN+RedisKeyConstant.USER+ userId;
+        RedisConnector.delete(key);
+        BaseContext.removeCurrentId();
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     * @param username
+     * @param passwordOld
+     * @param passwordNew
+     * @return
+     */
+    @PutMapping("/change/password")
+    public Result changePassword(@RequestParam String username,
+                                 @RequestParam String passwordOld,
+                                 @RequestParam String passwordNew){
+        log.info("修改密码，{},{}，{}",username,passwordOld,passwordNew);
+        return userService.changePassword(username,passwordOld,passwordNew);
+    }
+
+    /**
+     * 忘记密码
+     * @param username
+     * @param phone
+     * @param passwordNew
+     * @return
+     */
+    @PutMapping("/forget/password")
+    public Result forgetPassword(@RequestParam String username,
+                                 @RequestParam String phone,
+                                 @RequestParam String passwordNew){
+        log.info("忘记密码，{},{}，{}",username,phone,passwordNew);
+        return userService.forgetPassword(username,phone,passwordNew);
     }
 
 

@@ -14,4 +14,8 @@ public class MessageConstant {
     public static final String PASSWORD_ERROR = "密码错误";
     public static final String REFRESH_TOKEN_EXPIRED_ERROR = "登录已过期,请重新登录";
     public static final String SQL_MESSAGE_UPDATE_ERROR = "数据更新失败，请稍后重试";
+    public static final String ACCOUNT_NOT_FOUND = "账号不存在";
+    public static final String LOGIN_ERROR = "用户名或密码错误";
+    public static final String PASSWORD_MODIFY_ERROR = "密码修改失败,请重试";
+    public static final String ERROR_NEW_PASSWORD_SAME_AS_OLD = "新密码不能与旧密码相同";
 }

@@ -13,4 +13,5 @@ public class MessageConstant {
     public static final String USER_NOT_EXISTS = "用户不存在";
     public static final String PASSWORD_ERROR = "密码错误";
     public static final String REFRESH_TOKEN_EXPIRED_ERROR = "登录已过期,请重新登录";
+    public static final String SQL_MESSAGE_UPDATE_ERROR = "数据更新失败，请稍后重试";
 }

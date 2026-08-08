@@ -2,6 +2,7 @@ package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.UserLoginDTO;
+import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.entity.User;
 import com.starshop.pojo.vo.UserVO;
 import com.starshop.result.Result;
@@ -35,4 +36,10 @@ public interface UserService extends IService<User> {
      */
     Result<UserVO> getUser();
 
+    /**
+     * 更新用户信息
+     * @param userUpdateDTO
+     * @return
+     */
+    Result<UserVO> updateUserInfo(UserUpdateDTO userUpdateDTO);
 }

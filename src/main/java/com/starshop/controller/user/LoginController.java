@@ -2,6 +2,7 @@ package com.starshop.controller.user;
 
 
 import com.starshop.pojo.dto.UserLoginDTO;
+import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.vo.UserVO;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
@@ -58,6 +59,18 @@ public class LoginController {
     public Result<UserVO> getUser(){
         return userService.getUser();
     }
+
+    /**
+     * 更新用户信息
+     * @param userUpdateDTO
+     * @return
+     */
+    @PutMapping("/info")
+    public Result<UserVO> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
+        log.info("更新用户信息{}",userUpdateDTO);
+        return userService.updateUserInfo(userUpdateDTO);
+    }
+
 
 
 }

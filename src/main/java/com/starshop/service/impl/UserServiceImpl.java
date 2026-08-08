@@ -13,6 +13,7 @@ import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.UserMapper;
 import com.starshop.pojo.dto.UserLoginDTO;
+import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.emums.CommonStatus;
 import com.starshop.pojo.entity.User;
 import com.starshop.pojo.vo.UserVO;
@@ -21,7 +22,6 @@ import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +56,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //4.利用mapstruct自动映射
         UserVO userVO = copyMapper.usertoUserVO(user);
+        return Result.success(userVO);
+    }
+
+    /**
+     * 更新用户信息
+     * @param userUpdateDTO
+     * @return
+     */
+    @Override
+    @Transactional
+    public Result<UserVO> updateUserInfo(UserUpdateDTO userUpdateDTO) {
+        //1.查询当前用户
+        Long userId = BaseContext.getCurrentId();
+        //2.判断用户在数据库中是否存在
+        User user = lambdaQuery().eq(User::getId, userId).one();
+        if(Objects.isNull(user)){
+            return Result.error(MessageConstant.USER_NOT_EXISTS);
+        }
+        //3.利用mapstruct更新数据
+        copyMapper.updateUserFromDTO(userUpdateDTO,user);
+        //4.数据同步到数据库
+        boolean isSuccess = updateById(user);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_UPDATE_ERROR);
+        }
+        //5.封装VO
+        UserVO userVO = copyMapper.usertoUserVO(user);
+        //6.将数据同步到redis
+        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.USER_ID + userId;
+        if (RedisConnector.hasKey(key)) {
+            RedisConnector.opsForHash().put(key, User.Fields.userVO, userVO);
+        }
+
         return Result.success(userVO);
     }
 
@@ -133,7 +166,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     @Transactional
-    @Validate
+    @Validate(requiredPhone = true)
     public Result register(UserLoginDTO userLoginDTO) {
         //1.根据username查询数据库
         User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();

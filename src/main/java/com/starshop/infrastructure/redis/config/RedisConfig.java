@@ -1,4 +1,4 @@
-package com.starshop.config;
+package com.starshop.infrastructure.redis.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -16,8 +16,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Map;
 import java.util.TimeZone;
 
 /**

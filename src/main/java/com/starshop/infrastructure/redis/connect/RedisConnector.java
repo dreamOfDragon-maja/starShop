@@ -1,6 +1,5 @@
 package com.starshop.infrastructure.redis.connect;
 
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
@@ -18,7 +17,7 @@ public class RedisConnector {
     // 由配置类注入
     @Setter
     private static RedisTemplate<String, Object> redisTemplate;
-
+    
     // 保留 ObjectMapper 引用，以便在需要时进行复杂类型转换
     private static ObjectMapper objectMapper;
 
@@ -29,7 +28,7 @@ public class RedisConnector {
         Assert.notNull(objectMapper, "ObjectMapper must not be null");
         RedisConnector.objectMapper = objectMapper;
     }
-
+    
     // ===================== 对象 <-> Hash 转换操作 =====================
 
     /**
@@ -63,7 +62,7 @@ public class RedisConnector {
     public static <T> T getHashField(String key, String field, Class<T> targetClass) {
         Object value = redisTemplate.opsForHash().get(key, field);
         if (value == null) return null;
-
+        
         // 尝试直接转换
         try {
             return objectMapper.convertValue(value, targetClass);

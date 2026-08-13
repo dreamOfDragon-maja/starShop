@@ -1,11 +1,14 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.starshop.common.annotation.Validate;
 import com.starshop.common.creation.NicknameCreation;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.LoginInfo;
+import com.starshop.common.result.UserInfo;
 import com.starshop.common.utils.JwtUtils;
+import com.starshop.common.utils.WechatLoginUtils;
 import com.starshop.constant.JwtClaimsConstant;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
@@ -14,17 +17,20 @@ import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.UserMapper;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
+import com.starshop.pojo.dto.UserWechatDTO;
 import com.starshop.pojo.emums.CommonStatus;
-import com.starshop.pojo.entity.User;
-import com.starshop.pojo.vo.UserVO;
+import com.starshop.pojo.emums.UserRoleEnum;
+import com.starshop.pojo.entity.SysUser;
 import com.starshop.properties.JwtProperties;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -32,31 +38,86 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, SysUser> implements UserService {
 
     @Resource
     private JwtProperties jwtProperties;
     @Resource
     private CopyMapper copyMapper;
+    @Resource
+    private WechatLoginUtils wechatLoginUtils;
+    @Resource
+    private UserMapper userMapper;
 
 
     /**
      * 获取当前用户信息
      * @return
      */
+    public Result<Object> getUser() {
+        return Result.success(BaseContext.getUserInfo());
+    }
+
+    /**
+     * 用户使用微信快速登录
+     * @return
+     */
     @Override
-    public Result<UserVO> getUser() {
-        //1.获取当前用户id
-        Long userId = BaseContext.getCurrentId();
-        //2.根据id查询数据库
-        User user = lambdaQuery().eq(User::getId, userId).one();
-        //3.判断是否存在
-        if(Objects.isNull(user)){
-            return Result.error(MessageConstant.USER_NOT_EXISTS);
+    @Transactional(rollbackFor = Exception.class)
+    public Result loginByWechat(UserWechatDTO userWechatDTO) {
+        //1.获取前端的临时code
+        String code = userWechatDTO.getCode();
+        if(StringUtils.isBlank(code)){
+            return Result.error(MessageConstant.WECHAT_CODE_EMPTY);
         }
-        //4.利用mapstruct自动映射
-        UserVO userVO = copyMapper.usertoUserVO(user);
-        return Result.success(userVO);
+        //2.根据code解析json
+        JsonNode jsonNode = wechatLoginUtils.getWechatUserInfo(code);
+        if(Objects.isNull(jsonNode) || !jsonNode.has(SysUser.Fields.openid)){
+            return Result.error(MessageConstant.GET_OPENID_ERROR);
+        }
+        //3.获取openid
+        String openid = jsonNode.get(SysUser.Fields.openid).asText();
+        if (StringUtils.isBlank(openid)) {
+            return Result.error(MessageConstant.GET_OPENID_ERROR);
+        }
+        //4，根据openid获取用户
+        SysUser user = getSysUserByOpenidWithRolesAndPermissions(openid);
+        //5.新用户
+        if(Objects.isNull(user)){
+            //5.1.创建新用户并赋值
+            SysUser userNew = SysUser.builder()
+                    .openid(openid)
+                    .nickname(userWechatDTO.getNickName())
+                    .avatar(userWechatDTO.getAvatarUrl())
+                    .firstLoginTime(LocalDateTime.now())
+                    .lastLoginTime(LocalDateTime.now())
+                    .build();
+            //5.2.将新用户保存到数据库当中
+            save(userNew);
+            //5.3.给用户添加角色
+            userMapper.insertSysUserConnectSysRole(userNew.getId(), UserRoleEnum.ROLE_BUYER.getId());
+            //5.4.保存到redis
+            UserInfo userInfo = copyMapper.usertoUserInfo(userNew);
+            setUserInfoToRedis(userNew,userInfo);
+            //5.5.构造LoginInfo返回结果
+            String accessToken = getAccessToken(userInfo);
+            String refreshToken = getRefreshToken(userInfo);
+            return Result.success(new LoginInfo(accessToken,refreshToken,userInfo));
+        }
+
+        //6.老用户
+        //6.1.更新最后登录时间
+        user.setLastLoginTime(LocalDateTime.now());
+        //6.2.更新数据库信息
+        updateById(user);
+        //6.3.更新redis
+        UserInfo userInfo = copyMapper.usertoUserInfo(user);
+        setUserInfoToRedis(user,userInfo);
+        //6.4.组装返回
+        String accessToken = getAccessToken(userInfo);
+        String refreshToken = getRefreshToken(userInfo);
+        return Result.success(new LoginInfo(accessToken,refreshToken,userInfo));
+
     }
 
     /**
@@ -70,25 +131,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Validate(requiredPhone = true)
     public Result forgetPassword(String username, String phone, String passwordNew) {
         //1.根据username和phone查询一个用户
-        User user = lambdaQuery().eq(User::getUsername, username).eq(User::getPhone, phone).one();
+        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, username).eq(SysUser::getPhone, phone).one();
         //2.判断是否存在
-        if(Objects.isNull(user)){
+        if(Objects.isNull(sysUser)){
             return Result.error(MessageConstant.ACCOUNT_NOT_FOUND);
         }
         //3.设置新密码
-        String passwordOld = user.getPassword();
+        String passwordOld = sysUser.getPassword();
         if(BCrypt.checkpw(passwordNew,passwordOld)){
             return Result.error(MessageConstant.ERROR_NEW_PASSWORD_SAME_AS_OLD);
         }
         String hashpw = BCrypt.hashpw(passwordNew, BCrypt.gensalt());
-        user.setPassword(hashpw);
+        sysUser.setPassword(hashpw);
 
         //4.更新到数据库
-        boolean isSuccess = updateById(user);
+        boolean isSuccess = updateById(sysUser);
         if(!isSuccess){
             return Result.error(MessageConstant.PASSWORD_MODIFY_ERROR);
         }
-        return Result.success(user.getId());
+        return Result.success(sysUser.getId());
     }
 
     /**
@@ -102,24 +163,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Validate
     public Result changePassword(String username, String passwordOld, String passwordNew) {
         //1.查询用户
-        User user = lambdaQuery().eq(User::getUsername, username).one();
+        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, username).one();
         //2.业务判断
-        if(Objects.isNull(user)){
+        if(Objects.isNull(sysUser)){
             return Result.error(MessageConstant.ACCOUNT_NOT_FOUND);
         }
-        if(!BCrypt.checkpw(passwordOld,user.getPassword())){
+        if(!BCrypt.checkpw(passwordOld, sysUser.getPassword())){
             return Result.error(MessageConstant.LOGIN_ERROR);
         }
         //3.设置新密码
         String hashpw = BCrypt.hashpw(passwordNew, BCrypt.gensalt());
-        user.setPassword(hashpw);
+        sysUser.setPassword(hashpw);
 
         //4.更新到数据库
-        boolean isSuccess = updateById(user);
+        boolean isSuccess = updateById(sysUser);
         if(!isSuccess){
             return Result.error(MessageConstant.PASSWORD_MODIFY_ERROR);
         }
-        return Result.success(user.getId());
+        return Result.success(sysUser.getId());
     }
 
     /**
@@ -130,30 +191,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     @Validate
-    public Result<UserVO> updateUserInfo(UserUpdateDTO userUpdateDTO) {
+    public Result<UserInfo> updateUserInfo(UserUpdateDTO userUpdateDTO) {
         //1.查询当前用户
-        Long userId = BaseContext.getCurrentId();
+        Long userId = Long.valueOf(BaseContext.getUserId());
         //2.判断用户在数据库中是否存在
-        User user = lambdaQuery().eq(User::getId, userId).one();
-        if(Objects.isNull(user)){
+        SysUser sysUser = lambdaQuery().eq(SysUser::getId, userId).one();
+        if(Objects.isNull(sysUser)){
             return Result.error(MessageConstant.USER_NOT_EXISTS);
         }
         //3.利用mapstruct更新数据
-        copyMapper.updateUserFromDTO(userUpdateDTO,user);
+        copyMapper.updateUserFromDTO(userUpdateDTO, sysUser);
         //4.数据同步到数据库
-        boolean isSuccess = updateById(user);
+        boolean isSuccess = updateById(sysUser);
         if (!isSuccess) {
             return Result.error(MessageConstant.SQL_MESSAGE_UPDATE_ERROR);
         }
         //5.封装VO
-        UserVO userVO = copyMapper.usertoUserVO(user);
+        UserInfo userInfo = copyMapper.usertoUserInfo(sysUser);
         //6.将数据同步到redis
-        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.USER_ID + userId;
+        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.USER + userId;
         if (RedisConnector.hasKey(key)) {
-            RedisConnector.opsForHash().put(key, User.Fields.userVO, userVO);
+            RedisConnector.opsForHash().put(key, SysUser.Fields.userInfo, userInfo);
         }
 
-        return Result.success(userVO);
+        return Result.success(userInfo);
     }
 
     /**
@@ -173,12 +234,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //3.生成新的accessToken
         String accessTokenNew = JwtUtils.createJWT(jwtProperties.getUserSecretKey(), jwtProperties.getUserTtl(), refreshTokenMap);
         //4.从refreshTokenMap里面获取userId
-        Long userId = Long.valueOf(refreshTokenMap.get(JwtClaimsConstant.USER_ID).toString());
+        Long userId = Long.valueOf(refreshTokenMap.get(JwtClaimsConstant.SYS_USER_ID).toString());
         //5，删除旧的refreshToken
         RedisConnector.delete(key);
         //6.生成新的的refreshToken
-        UserVO userVO = UserVO.builder().id(String.valueOf(userId)).build();
-        String refreshTokenNew = getRefreshToken(userVO);
+        UserInfo userInfo = UserInfo.builder().id(String.valueOf(userId)).build();
+        String refreshTokenNew = getRefreshToken(userInfo);
         //7.封装信息组装
         HashMap<String, Object> resultMap = new HashMap<>(2);
         resultMap.put(RedisKeyConstant.FIELD_ACCESS_TOKEN,accessTokenNew);
@@ -197,31 +258,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Validate
     public Result<Object> login(UserLoginDTO userLoginDTO) throws Exception {
         //1.查询用户
-        User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();
+        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userLoginDTO.getUsername()).one();
         //2.如果不存在，抛出异常
-        if (user == null) {
+        if (sysUser == null) {
             throw new Exception(MessageConstant.USER_NOT_EXISTS);
         }
         //3.存在，查询数据库校验是否正确
-        if (!BCrypt.checkpw(userLoginDTO.getPassword(),user.getPassword())) {
+        if (!BCrypt.checkpw(userLoginDTO.getPassword(), sysUser.getPassword())) {
             throw new Exception(MessageConstant.PASSWORD_ERROR);
         }
         //4.信息正确则生成accessToken
-        UserVO userVO = copyMapper.usertoUserVO(user);
-        String userId = userVO.getId();
-        HashMap<String, Object> map = new HashMap<>();
-        map.put(JwtClaimsConstant.USER_ID, userId);
-        long userTtl = jwtProperties.getUserTtl();
-        String accessToken = JwtUtils.createJWT(jwtProperties.getUserSecretKey(), userTtl, map);
+        UserInfo userInfo = copyMapper.usertoUserInfo(sysUser);
+        String accessToken = getAccessToken(userInfo);
 
         //5.生成refreshToken
-        String refreshToken = getRefreshToken(userVO);
+        String refreshToken = getRefreshToken(userInfo);
 
         //6.将生成的token存入redis
-        setUserInfoToRedis(user,userVO,accessToken,refreshToken);
+        setUserInfoToRedis(sysUser,userInfo);
 
         //7.组装VO返回结果
-        return Result.success(new LoginInfo(accessToken,refreshToken,userVO));
+        return Result.success(new LoginInfo(accessToken,refreshToken,userInfo));
     }
 
     /**
@@ -234,9 +291,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Validate(requiredPhone = true)
     public Result register(UserLoginDTO userLoginDTO) {
         //1.根据username查询数据库
-        User user = lambdaQuery().eq(User::getUsername, userLoginDTO.getUsername()).one();
+        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userLoginDTO.getUsername()).one();
         //2.判断是否存在
-        if(Objects.nonNull(user)){
+        if(Objects.nonNull(sysUser)){
             //2.1存在，返回错误信息
             return Result.error(MessageConstant.USER_NAME_EXISTS);
         }
@@ -245,7 +302,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String hashpw = BCrypt.hashpw(userLoginDTO.getPassword(), BCrypt.gensalt());
         //2.4生成随机昵称（UUID）
         String nickname = NicknameCreation.createDefaultNickname();
-        User build = User.builder()
+        SysUser build = SysUser.builder()
                 .nickname(nickname)
                 .password(hashpw)
                 .username(userLoginDTO.getUsername())
@@ -262,37 +319,84 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 刷新 token 格式: UUID
-     * @param userVO
+     * @param userInfo
      * @return
      */
-    private String getRefreshToken(UserVO userVO) {
+    private String getRefreshToken(UserInfo userInfo) {
         String refreshToken = UUID.randomUUID().toString();
         String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.REFRESH + RedisKeyConstant.TOKEN +refreshToken;
         HashMap<String, Object> map = new HashMap<>(1);
-        map.put(JwtClaimsConstant.USER_ID, userVO.getId());
+        map.put(JwtClaimsConstant.SYS_USER_ID, userInfo.getId());
         RedisConnector.opsForHash().putAll(key, map);
         RedisConnector.expire(key, jwtProperties.getLoginRefreshTokenTtl(), TimeUnit.DAYS);
         return refreshToken;
     }
 
     /**
+     * 获取accessToken
+     * @param userInfo
+     * @return
+     */
+    private String getAccessToken(UserInfo userInfo) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(JwtClaimsConstant.SYS_USER_ID, userInfo.getId());
+        return JwtUtils.createJWT(jwtProperties.getUserSecretKey(), jwtProperties.getUserTtl(), map);
+    }
+
+    /**
      * 设置用户信息存入redis
      * @param user
-     * @param userVO
-     * @param accessToken
-     * @param refreshToken
+     * @param userInfo
      */
-    public void setUserInfoToRedis(User user, UserVO userVO,String accessToken, String refreshToken) {
+    public void setUserInfoToRedis(SysUser user, UserInfo userInfo) {
         if (Objects.isNull(user)) {
             return;
         }
-        String key = RedisKeyConstant.PREFIX_LOGIN+RedisKeyConstant.USER_ID+user.getId();
+        String key = RedisKeyConstant.PREFIX_LOGIN+RedisKeyConstant.USER+ user.getId();
         HashMap<String, Object> loginUserMap = new HashMap<>(4);
-        loginUserMap.put(User.Fields.userVO, userVO);
-        loginUserMap.put(User.Fields.isEnable, CommonStatus.ACTIVE.getNumber());
-        loginUserMap.put(RedisKeyConstant.FIELD_ACCESS_TOKEN, accessToken);
-        loginUserMap.put(RedisKeyConstant.FIELD_REFRESH_TOKEN, refreshToken);
+        loginUserMap.put(SysUser.Fields.userInfo, userInfo);
+        loginUserMap.put(SysUser.Fields.isEnable, CommonStatus.ACTIVE.getNumber());
+        loginUserMap.put(SysUser.Fields.sysRoleList, user.getSysRoleList());
+        loginUserMap.put(SysUser.Fields.sysPermissionList, user.getSysPermissionList());
         RedisConnector.opsForHash().putAll(key, loginUserMap);
         RedisConnector.expire(key, jwtProperties.getLoginUserInfoInRedisTtl(), TimeUnit.DAYS);
     }
+
+
+    /**
+     * 根据 username 查询 user 带角色和权限
+     */
+    @Override
+    public SysUser getSysUserByNameWithRolesAndPermissions(String username) {
+        if (StringUtils.isBlank(username)) {
+            return null;
+
+        }
+        return userMapper.getSysUserByNameWithRolesAndPermissions(username);
+    }
+
+    /**
+     * 根据 userId 查询 user 带角色和权限
+     */
+    @Override
+    public SysUser getSysUserByUserIdWithRolesAndPermissions(Long userId) {
+        if (Objects.isNull(userId)) {
+            return null;
+
+        }
+        return userMapper.getSysUserByUserIdWithRolesAndPermissions(userId);
+    }
+
+    /**
+     * 根据 openid 查询 user 带角色和权限
+     */
+    @Override
+    public SysUser getSysUserByOpenidWithRolesAndPermissions(String openid) {
+        if (Objects.isNull(openid)) {
+            return null;
+
+        }
+        return userMapper.getSysUserByOpenidWithRolesAndPermissions(openid);
+    }
+
 }

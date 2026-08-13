@@ -18,4 +18,13 @@ public class MessageConstant {
     public static final String LOGIN_ERROR = "用户名或密码错误";
     public static final String PASSWORD_MODIFY_ERROR = "密码修改失败,请重试";
     public static final String ERROR_NEW_PASSWORD_SAME_AS_OLD = "新密码不能与旧密码相同";
+    public static final String WECHAT_CODE_EMPTY = "微信登录失败，请重试";
+    public static final String GET_OPENID_ERROR = "登录校验失败，请重新登录";
+    public static final String NO_ACCESS_TOKEN = "用户未登录";
+    public static final String TOKEN_EXPIRED = "JWT 令牌解析失败(accessToken过期)";
+    public static final String TOKEN_INVALID = "JWT 令牌解析失败(accessToken签名错误,篡改)";
+    public static final String USER_NOT_LOGIN = "用户登录异常,请重新登录";
+    public static final String PERMISSION_DENIED = "权限不足";
+    public static final String SYSTEM_ERROR = "服务器异常";
+    public static final String ACCOUNT_LOCKED = "账号被锁定";
 }

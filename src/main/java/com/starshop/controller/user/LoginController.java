@@ -1,12 +1,13 @@
 package com.starshop.controller.user;
 
 
+import com.starshop.common.result.UserInfo;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
-import com.starshop.pojo.vo.UserVO;
+import com.starshop.pojo.dto.UserWechatDTO;
 import com.starshop.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
      @Resource
-     private UserService userService;;
+     private UserService userService;
 
     /**
      * 新用户注册账号
@@ -37,7 +38,7 @@ public class LoginController {
      * @param userLoginDTO
      * @return
      */
-    @PostMapping("/login")
+    @PostMapping("/login/account")
     public Result<Object> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
         log.info("用户登录{}",userLoginDTO);
         return userService.login(userLoginDTO);
@@ -59,7 +60,7 @@ public class LoginController {
      * @return
      */
     @GetMapping("/info")
-    public Result<UserVO> getUser(){
+    public Result getUser() {
         return userService.getUser();
     }
 
@@ -70,7 +71,7 @@ public class LoginController {
      */
     @PutMapping("/info")
 
-    public Result<UserVO> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
+    public Result<UserInfo> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
         log.info("更新用户信息{}",userUpdateDTO);
         return userService.updateUserInfo(userUpdateDTO);
     }
@@ -81,10 +82,10 @@ public class LoginController {
      */
     @PostMapping("/logout")
     public Result logout(){
-        String userId = BaseContext.getCurrentId().toString();
+        String userId = BaseContext.getUserId();
         String key = RedisKeyConstant.PREFIX_LOGIN+RedisKeyConstant.USER+ userId;
         RedisConnector.delete(key);
-        BaseContext.removeCurrentId();
+        BaseContext.removeUserInfo();
         return Result.success();
     }
 
@@ -119,5 +120,14 @@ public class LoginController {
     }
 
 
+    /**
+     * 用户使用微信快速登录
+     * @return
+     */
+    @PostMapping("/login/wechat")
+    public Result loginByWechat(@RequestBody UserWechatDTO userWechatDTO){
+        log.info("用户使用微信快速登录{}",userWechatDTO);
+        return userService.loginByWechat(userWechatDTO);
+    }
 
 }

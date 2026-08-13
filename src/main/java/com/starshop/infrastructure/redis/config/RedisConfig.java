@@ -65,7 +65,7 @@ public class RedisConfig {
                 .allowIfBaseType(Object.class) // 允许基础类型
                 .allowIfBaseType("java.util")  // 允许常见集合
                 .allowIfBaseType("java.time")  // 允许时间类型
-                .allowIfBaseType("com.app")    // 关键：允许本项目包下的类
+                .allowIfBaseType("com.starshop")    // 关键：允许本项目包下的类
                 .build();
 
         // 激活 DefaultTyping，记录类型信息 (@class)

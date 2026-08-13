@@ -1,18 +1,20 @@
-package com.starshop.pojo.vo;
+package com.starshop.common.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 
-@Data
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserVO implements Serializable {
-
+public class UserInfo implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     /**
      * 用户 ID
      */
@@ -37,5 +39,7 @@ public class UserVO implements Serializable {
      * 微信用户唯一标识
      */
     private String openid;
+
+
 
 }

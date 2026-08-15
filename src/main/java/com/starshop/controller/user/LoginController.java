@@ -9,7 +9,7 @@ import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
 import com.starshop.result.Result;
-import com.starshop.service.UserService;
+import com.starshop.service.LoginService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
      @Resource
-     private UserService userService;
+     private LoginService loginService;
 
     /**
      * 新用户注册账号
@@ -30,7 +30,7 @@ public class LoginController {
     @PostMapping("/register")
     public Result register(@RequestBody UserLoginDTO userLoginDTO){
         log.info("新用户注册账号{}",userLoginDTO);
-        return userService.register(userLoginDTO);
+        return loginService.register(userLoginDTO);
     }
 
     /**
@@ -41,7 +41,7 @@ public class LoginController {
     @PostMapping("/login/account")
     public Result<Object> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
         log.info("用户登录{}",userLoginDTO);
-        return userService.login(userLoginDTO);
+        return loginService.login(userLoginDTO);
     }
 
     /**
@@ -52,7 +52,7 @@ public class LoginController {
     @PostMapping("/refresh/token")
     public Result refreshToken(@RequestParam String refreshToken){
         log.info("刷新token{}",refreshToken);
-        return userService.refreshToken(refreshToken);
+        return loginService.refreshToken(refreshToken);
     }
 
     /**
@@ -61,7 +61,7 @@ public class LoginController {
      */
     @GetMapping("/info")
     public Result getUser() {
-        return userService.getUser();
+        return loginService.getUser();
     }
 
     /**
@@ -73,7 +73,7 @@ public class LoginController {
 
     public Result<UserInfo> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
         log.info("更新用户信息{}",userUpdateDTO);
-        return userService.updateUserInfo(userUpdateDTO);
+        return loginService.updateUserInfo(userUpdateDTO);
     }
 
     /**
@@ -101,7 +101,7 @@ public class LoginController {
                                  @RequestParam String passwordOld,
                                  @RequestParam String passwordNew){
         log.info("修改密码，{},{}，{}",username,passwordOld,passwordNew);
-        return userService.changePassword(username,passwordOld,passwordNew);
+        return loginService.changePassword(username,passwordOld,passwordNew);
     }
 
     /**
@@ -116,7 +116,7 @@ public class LoginController {
                                  @RequestParam String phone,
                                  @RequestParam String passwordNew){
         log.info("忘记密码，{},{}，{}",username,phone,passwordNew);
-        return userService.forgetPassword(username,phone,passwordNew);
+        return loginService.forgetPassword(username,phone,passwordNew);
     }
 
 
@@ -127,7 +127,7 @@ public class LoginController {
     @PostMapping("/login/wechat")
     public Result loginByWechat(@RequestBody UserWechatDTO userWechatDTO){
         log.info("用户使用微信快速登录{}",userWechatDTO);
-        return userService.loginByWechat(userWechatDTO);
+        return loginService.loginByWechat(userWechatDTO);
     }
 
 }

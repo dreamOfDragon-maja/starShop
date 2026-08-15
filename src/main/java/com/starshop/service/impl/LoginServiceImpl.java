@@ -23,7 +23,7 @@ import com.starshop.pojo.emums.UserRoleEnum;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.properties.JwtProperties;
 import com.starshop.result.Result;
-import com.starshop.service.UserService;
+import com.starshop.service.LoginService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.mindrot.jbcrypt.BCrypt;
@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, SysUser> implements UserService {
+public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implements LoginService {
 
     @Resource
     private JwtProperties jwtProperties;

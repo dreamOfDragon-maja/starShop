@@ -12,7 +12,7 @@ import com.starshop.pojo.entity.SysPermission;
 import com.starshop.pojo.entity.SysRole;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.security.token.JwtToken;
-import com.starshop.service.impl.UserServiceImpl;
+import com.starshop.service.impl.LoginServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
 import lombok.Setter;
@@ -35,7 +35,7 @@ public class CustomRealm extends AuthorizingRealm {
     private static final Logger log = LoggerFactory.getLogger(CustomRealm.class);
 
     @Resource
-    private UserServiceImpl userserviceimpl;
+    private LoginServiceImpl userserviceimpl;
 
     @Resource
     private CopyMapper copyMapper;

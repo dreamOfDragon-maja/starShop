@@ -9,7 +9,7 @@ import com.starshop.pojo.entity.SysUser;
 import com.starshop.result.Result;
 import jakarta.validation.constraints.NotBlank;
 
-public interface UserService extends IService<SysUser> {
+public interface LoginService extends IService<SysUser> {
 
     /**
      * 根据 username 查询 user 带角色和权限

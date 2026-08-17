@@ -4,4 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.entity.Category;
 
 public interface CategoryService extends IService<Category> {
+
+    /**
+     * 更新 categoryTreeId 在 Redis 里的缓存
+     */
+    void updateCategoryTreeRedisCache();
+
 }

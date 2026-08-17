@@ -1,22 +1,31 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starshop.common.utils.CaffeineUtils;
 import com.starshop.constant.DataConstant;
+import com.starshop.constant.RedisKeyConstant;
+import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.CategoryMapper;
 import com.starshop.pojo.emums.CommonStatus;
 import com.starshop.pojo.entity.Category;
+import com.starshop.service.CategoryService;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> {
+public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
+
+    @Resource
+    private CaffeineUtils caffeineUtils;
     /**
      * loadingCache 存储分类树的缓存
      * @return
@@ -56,5 +65,29 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> {
             nextCategoriesList.addAll(childrenCategories);
         });
         buildCategoryTree(allCategories,nextCategoriesList);
+    }
+
+    /**
+     * 更新 categoryTreeId 在 Redis 里的缓存
+     */
+    @Override
+    public void updateCategoryTreeRedisCache() {
+        //key = category: + tree
+        String key = RedisKeyConstant.PREFIX_CATEGORY + RedisKeyConstant.TREE;
+        //先根据key删除原有数据
+        RedisConnector.delete(key);
+        //调用工具类获取分类树
+        List<Category> categoryTree = caffeineUtils.getCategoryTree();
+        //更新策略opsforhash
+        //hashkey =firstCategory: + firstCategoryId;
+        HashMap<String, Object> map = new HashMap<>(categoryTree.size());
+        for (Category category : categoryTree) {
+            Long firstCategoryId = category.getId();
+            String hashkey =RedisKeyConstant.FIRST_CATEGORY+ firstCategoryId;
+            List<Long> secondCategoryId = category.getChildren().stream().map(Category::getId).collect(Collectors.toList());
+            map.put(hashkey,secondCategoryId);
+        }
+
+        RedisConnector.opsForHash().putAll(key,map);
     }
 }

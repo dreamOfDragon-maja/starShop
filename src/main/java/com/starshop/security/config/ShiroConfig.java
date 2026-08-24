@@ -140,7 +140,7 @@ public class ShiroConfig {
     }
 
     private static @NonNull Map<String, String> getStringStringMap() {
-        Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
+     Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
         // 公开接口（无需认证）
         filterChainDefinitionMap.put("/api/user/login/**", "anon");
         filterChainDefinitionMap.put("/api/user/refresh/**", "anon");

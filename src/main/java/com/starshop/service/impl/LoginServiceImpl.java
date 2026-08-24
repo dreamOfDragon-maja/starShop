@@ -277,6 +277,8 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
         //6.将生成的token存入redis
         setUserInfoToRedis(sysUser,userInfo);
 
+        BaseContext.setUserInfo(userInfo);
+
         //7.组装VO返回结果
         return Result.success(new LoginInfo(accessToken,refreshToken,userInfo));
     }

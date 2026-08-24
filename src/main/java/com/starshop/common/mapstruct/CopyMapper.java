@@ -1,7 +1,9 @@
 package com.starshop.common.mapstruct;
 
 import com.starshop.common.result.UserInfo;
+import com.starshop.pojo.dto.CategoryDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
+import com.starshop.pojo.entity.Category;
 import com.starshop.pojo.entity.SysUser;
 import org.mapstruct.*;
 
@@ -25,4 +27,6 @@ public interface CopyMapper {
      */
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateUserFromDTO(UserUpdateDTO dto, @MappingTarget SysUser sysUser);
+
+    Category categoryDTOToCategory(CategoryDTO categoryDTO);
 }

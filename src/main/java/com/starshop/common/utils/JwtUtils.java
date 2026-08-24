@@ -1,15 +1,22 @@
 package com.starshop.common.utils;
 
 
+import com.starshop.constant.MessageConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 public class JwtUtils {
+
+    private static final String JWT_PREFIX = "Bearer ";
 
     /**
      * 生成jwt
@@ -20,31 +27,38 @@ public class JwtUtils {
      * @param claims    设置的信息
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
-        //生成JWT时间
-        long l = System.currentTimeMillis() + ttlMillis;
-        Date date = new Date(l);
-        //构造结果返回
+        // 生成 JWT的时间
+        long expMillis = System.currentTimeMillis() + ttlMillis;
+        Date exp = new Date(expMillis);
+
+        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+
         return Jwts.builder()
-                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes(StandardCharsets.UTF_8))
-                .setClaims(claims)
-                .setExpiration(date)
+                .claims(claims)
+                .expiration(exp)
+                .signWith(key)
                 .compact();
     }
 
-
     /**
-     * Token解密
+     * Token 解密
      *
      * @param secretKey jwt秘钥 此秘钥一定要保留好在服务端, 不能暴露出去, 否则sign就可以被伪造, 如果对接多个客户端建议改造成多个
-     * @param token     加密后的token
+     * @param token     加密后的 token
      * @return
      */
     public static Claims parseJWT(String secretKey, String token) {
-         return Jwts.parser()
-                .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
-                 .build()
-                 // 设置需要解析的jwt
-                .parseClaimsJws(token)
-                .getBody();
+        if (Objects.isNull(token) || !token.startsWith(JWT_PREFIX)) {
+            throw new SignatureException(MessageConstant.TOKEN_INVALID);
+
+        }
+        String cleanToken = token.substring(JWT_PREFIX.length()).replaceAll("\\s", "");
+        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(cleanToken)
+                .getPayload();
     }
 }

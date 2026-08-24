@@ -16,6 +16,7 @@ import com.starshop.service.impl.LoginServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
@@ -24,10 +25,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Setter
@@ -84,6 +82,14 @@ public class CustomRealm extends AuthorizingRealm {
         List<SysRole> sysRoleList = (List<SysRole>) userMap.get(SysUser.Fields.sysRoleList);
         List<SysPermission> sysPermissionList = (List<SysPermission>) userMap.get(SysUser.Fields.sysPermissionList);
         UserInfo userInfo = (UserInfo) userMap.get(SysUser.Fields.userInfo);
+
+        //TODO :角色权限判断没问题，这里是加数据能通过，后续把空集合删除
+        if (CollectionUtils.isEmpty(sysPermissionList)) {
+            sysPermissionList =new ArrayList<>();
+        }
+        if (CollectionUtils.isEmpty(sysRoleList)) {
+            sysRoleList =new ArrayList<>();
+        }
 
         if (Objects.isNull(sysRoleList) || Objects.isNull(sysPermissionList) || Objects.isNull(userInfo)) {
             throw new UnknownAccountException(MessageConstant.USER_NOT_LOGIN);

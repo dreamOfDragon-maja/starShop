@@ -27,4 +27,5 @@ public class MessageConstant {
     public static final String PERMISSION_DENIED = "权限不足";
     public static final String SYSTEM_ERROR = "服务器异常";
     public static final String ACCOUNT_LOCKED = "账号被锁定";
+    public static final String DATA_ERROR = "数据异常,请重试";
 }

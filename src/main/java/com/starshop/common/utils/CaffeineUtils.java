@@ -14,20 +14,17 @@ import java.util.Map;
 public  class CaffeineUtils {
 
     @Resource
-    private LoadingCache<String, List<String>> hotProductSearchKeywordCache;
+    private Cache<String, List<String>> hotProductSearchKeywordCache;
 
     @Resource
-    private LoadingCache<String, List<Category>> categoryTreeCache;
-
-    @Resource(name = "MaxAndMinProductIdInDataCache")
-    private Cache<String, Map<String,Long>> maxAndMinProductIdInDataCache;
+    private Cache<String, List<Category>> categoryTreeCache;
 
 
     /**
      * 查询热门搜索关键词
      */
     public  List<String> getHotProductSearchKeyword() {
-        return hotProductSearchKeywordCache.get(CaffeineConstant.CACHE_KEY_HOT_PRODUCT_SEARCH_KEYWORD);
+        return hotProductSearchKeywordCache.getIfPresent(CaffeineConstant.CACHE_KEY_HOT_PRODUCT_SEARCH_KEYWORD);
     }
 
     /**
@@ -41,7 +38,7 @@ public  class CaffeineUtils {
      * 查询分类树
      */
     public List<Category> getCategoryTree() {
-        return categoryTreeCache.get(CaffeineConstant.CACHE_KEY_CATEGORY_TREE);
+        return categoryTreeCache.getIfPresent(CaffeineConstant.CACHE_KEY_CATEGORY_TREE);
     }
 
     /**

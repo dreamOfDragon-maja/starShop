@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 @Slf4j
 public class CategoryController {
-    //TODO 完成分类接口
 
     @Resource
     private CategoryService categoryService;
@@ -57,5 +56,19 @@ public class CategoryController {
         log.info("更新分类，{}，{}",id,categoryDTO);
         return categoryService.updateCategoryInfo(id,categoryDTO);
     }
+
+
+    /**
+     * 更新分类状态
+     * @param id
+     * @param status
+     * @return
+     */
+    @PutMapping("/admin/category/{id}/status")
+    public Result updateCategoryStatus(@PathVariable String id ,@RequestParam String status){
+        log.info("更新分类状态,{},{}",id,status);
+        return categoryService.updateCategoryStatus(id,status);
+    }
+
 
 }

@@ -22,4 +22,18 @@ public enum CommonStatus {
         this.number = number;
         this.desc = desc;
     }
+
+    /**
+     * 根据传递 number返回 value
+     * @param number
+     * @return
+     */
+    public static String getValueByNumber(Integer number){
+        for(CommonStatus commonStatus : values()){
+            if (commonStatus.number == number) {
+                return commonStatus.value;
+            }
+        }
+        throw new IllegalArgumentException("无效的CommonStatus.number:" + number);
+    }
 }

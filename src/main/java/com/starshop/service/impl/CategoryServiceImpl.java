@@ -12,6 +12,7 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.CategoryMapper;
 import com.starshop.pojo.dto.CategoryDTO;
+import com.starshop.pojo.emums.CommonStatus;
 import com.starshop.pojo.entity.Category;
 import com.starshop.result.Result;
 import com.starshop.service.CategoryService;
@@ -19,6 +20,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.smartcardio.CommandAPDU;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -105,6 +107,27 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         }
         Category category = categoryMap.get(id);
         return category;
+    }
+
+    /**
+     * 更新分类状态
+     * @param id
+     * @param status
+     * @return
+     */
+    @Override
+    @UpdateCategoryTreeRedisCacheAnnotation
+    public Result updateCategoryStatus(String id, String status) {
+        //根据lambdaUpdate更新状态
+        boolean isSuccess = lambdaUpdate().eq(Category::getId, id).set(Category::getStatus, status).update();
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        Map<String, Object> map = new HashMap<>(2);
+        map.put(Category.Fields.id,id);
+        map.put(Category.Fields.status, CommonStatus.getValueByNumber(Integer.valueOf(status)));
+        invalidateCache();
+        return Result.success(map);
     }
 
     /**

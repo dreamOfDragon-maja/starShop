@@ -40,4 +40,11 @@ public interface CategoryService extends IService<Category> {
      */
     Result updateCategoryInfo(String id, CategoryDTO categoryDTO);
 
+    /**
+     * 更新分类状态
+     * @param id
+     * @param status
+     * @return
+     */
+    Result updateCategoryStatus(String id, String status);
 }

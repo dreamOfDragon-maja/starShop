@@ -108,6 +108,54 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     /**
+     * 更新分类
+     * @param id
+     * @param categoryDTO
+     * @return
+     */
+    @Override
+    @UpdateCategoryTreeRedisCacheAnnotation
+    public Result updateCategoryInfo(String id, CategoryDTO categoryDTO) {
+        Category category = copyMapper.categoryDTOToCategory(categoryDTO);
+        category.setId(Long.valueOf(id));
+        boolean isSuccess = updateById(category);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        //清除缓存
+        invalidateCache();
+        return Result.success(category);
+    }
+
+    /**
+     * 获取分类树
+     * @return
+     */
+    @Override
+    public Result getCategoryTree() {
+        //TODO这里为什么前端的返回结果中没有数据只显示操作成功
+        //获取分类缓存
+        List<Category> categoryTree = caffeineUtils.getCategoryTree();
+        return Result.success(categoryTree);
+    }
+
+    /**
+     * 删除分类
+     * @param categoryId
+     * @return
+     */
+    @Override
+    @UpdateCategoryTreeRedisCacheAnnotation
+    public Result deleteCategory(String categoryId) {
+        boolean isSuccess = removeById(Long.valueOf(categoryId));
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        invalidateCache();
+        return Result.success();
+    }
+
+    /**
      * 新增分类
      * @param categoryDTO
      * @return

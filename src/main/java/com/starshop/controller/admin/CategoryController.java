@@ -5,10 +5,7 @@ import com.starshop.result.Result;
 import com.starshop.service.CategoryService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -28,4 +25,37 @@ public class CategoryController {
         log.info("新增分类{}", categoryDTO);
         return categoryService.addCategory(categoryDTO);
     }
+
+    /**
+     * 删除分类
+     * @return
+     */
+    @DeleteMapping("/admin/category/{categoryId}")
+    public Result deleteCategory(@PathVariable String categoryId){
+        log.info("删除分类{}",categoryId);
+        return categoryService.deleteCategory(categoryId);
+    }
+
+    /**
+     * 获取分类树
+     * @return
+     */
+    @GetMapping("/category/tree")
+    public Result getCategoryTree(){
+        log.info("获取分类树");
+        return categoryService.getCategoryTree();
+    }
+
+    /**
+     * 更新分类
+     * @param id
+     * @param categoryDTO
+     * @return
+     */
+    @PutMapping("/admin/category/{id}")
+    public Result updateCategoryInfo(@PathVariable String id, @RequestBody CategoryDTO categoryDTO){
+        log.info("更新分类，{}，{}",id,categoryDTO);
+        return categoryService.updateCategoryInfo(id,categoryDTO);
+    }
+
 }

@@ -19,5 +19,25 @@ public interface CategoryService extends IService<Category> {
      */
     Result addCategory(CategoryDTO categoryDTO);
 
+    /**
+     * 删除分类
+     * @param categoryId
+     * @return
+     */
+    Result deleteCategory(String categoryId);
+
+    /**
+     * 获取分类树
+     * @return
+     */
+    Result getCategoryTree();
+
+    /**
+     * 更新分类
+     * @param id
+     * @param categoryDTO
+     * @return
+     */
+    Result updateCategoryInfo(String id, CategoryDTO categoryDTO);
 
 }

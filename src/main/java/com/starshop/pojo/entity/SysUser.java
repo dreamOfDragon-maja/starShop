@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * 系统用户表
  *
- * @since 2026-01-26
  */
 @Data
 @Builder

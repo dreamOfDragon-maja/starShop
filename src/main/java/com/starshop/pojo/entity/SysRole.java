@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
  * 系统角色表
  *
  * @author 开发者
- * @since 2026-01-26
  */
 @Data
 public class SysRole implements Serializable {

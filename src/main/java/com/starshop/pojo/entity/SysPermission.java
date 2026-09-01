@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
  * 系统权限表（电商三级）
  *
  * @author 开发者
- * @since 2026-01-26
  */
 @Data
 public class SysPermission implements Serializable {

@@ -19,4 +19,19 @@ public class RedisKeyConstant {
     public static final String PREFIX_CATEGORY = "category:";
     public static final String TREE = "tree";
     public static final String FIRST_CATEGORY = "firstCategory:";
+
+    /**
+     * 商品模块
+     */
+    public static final String HOT = "hot";
+    public static final String PREFIX_PRODUCT = "product:";
+    public static final String PREFIX_COPY = "copy:";
+    public static final String ID_LIST="idList";
+
+
+    /**
+     * Bucket
+     */
+    public static final String BUCKET_PREFIX = "bucket:";
+
 }

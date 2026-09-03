@@ -30,8 +30,8 @@ public class RedisKeyConstant {
 
 
     /**
-     * Bucket
+     * Bucket 读写标记前缀（仅用于 Redisson RBucket 锁标记，不可与业务数据 key 混用）
      */
-    public static final String BUCKET_PREFIX = "bucket:";
+    public static final String BUCKET_SIGN_PREFIX = "bucket:sign:";
 
 }

@@ -1,5 +1,3 @@
-#单位秒 s
-#规范: RedisKeyGenerator + Ttl: ***
 redis:
   cache:
     ttl:

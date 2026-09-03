@@ -16,4 +16,9 @@ public interface ProductRedisCacheService {
      * 查询热门商品ID列表
      */
     List<Long> getHotProductIdList();
+
+    /**
+     * 刷新热门商品缓存（从 DB 按销量 Top N 写入 Redis 双缓存）
+     */
+    void refreshHotProductCache();
 }

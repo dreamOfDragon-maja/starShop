@@ -68,12 +68,10 @@ public class RedisConfig {
                 .allowIfBaseType("com.starshop")    // 关键：允许本项目包下的类
                 .build();
 
-        // 激活 DefaultTyping，记录类型信息 (@class)
-        // 使用 NON_FINAL 策略，适用于绝大多数场景
         objectMapper.activateDefaultTyping(
                 ptv,
                 ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY
+                JsonTypeInfo.As.WRAPPER_ARRAY
         );
 
         // 【关键修复】创建副本给 RedisConnector 使用，并禁用 DefaultTyping

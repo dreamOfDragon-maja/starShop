@@ -146,4 +146,24 @@ public class RedisConnector {
         return redisTemplate.expire(key, timeout, unit);
     }
 
+    /**
+     * 重命名 key（底层调用 RENAME）
+     * @param oldKey 原 key
+     * @param newKey 新 key
+     * @return true 成功 / false 失败（oldKey 不存在时）
+     */
+    public static boolean rename(String oldKey, String newKey) {
+        if (oldKey == null || oldKey.isBlank() || newKey == null || newKey.isBlank()) {
+            return false;
+        }
+        try {
+            redisTemplate.rename(oldKey, newKey);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+
 }

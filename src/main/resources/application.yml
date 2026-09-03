@@ -3,6 +3,8 @@ spring:
     active: dev
   main:
     allow-circular-references: true
+  config:
+    import: classpath:redisCache.yml
 
 server:
   port: 8080

@@ -12,6 +12,7 @@ import com.starshop.result.Result;
 import com.starshop.service.LoginService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,7 +29,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
-    public Result register(@RequestBody UserLoginDTO userLoginDTO){
+    public Result register(@RequestBody @Validated UserLoginDTO userLoginDTO){
         log.info("新用户注册账号{}",userLoginDTO);
         return loginService.register(userLoginDTO);
     }
@@ -39,7 +40,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/login/account")
-    public Result<Object> login(@RequestBody UserLoginDTO userLoginDTO) throws Exception {
+    public Result<Object> login(@RequestBody @Validated UserLoginDTO userLoginDTO) throws Exception {
         log.info("用户登录{}",userLoginDTO);
         return loginService.login(userLoginDTO);
     }
@@ -71,7 +72,7 @@ public class LoginController {
      */
     @PutMapping("/info")
 
-    public Result<UserInfo> updateUserInfo(@RequestBody UserUpdateDTO userUpdateDTO){
+    public Result<UserInfo> updateUserInfo(@RequestBody @Validated UserUpdateDTO userUpdateDTO){
         log.info("更新用户信息{}",userUpdateDTO);
         return loginService.updateUserInfo(userUpdateDTO);
     }

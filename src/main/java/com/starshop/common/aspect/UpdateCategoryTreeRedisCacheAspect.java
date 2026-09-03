@@ -6,13 +6,15 @@ import jakarta.annotation.Resource;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Aspect
+@Component
 public class UpdateCategoryTreeRedisCacheAspect {
 
-      @Pointcut(value = "com.starshop.common.annotation.UpdateCategoryTreeRedisCacheAnnotation")
+      @Pointcut("@annotation(com.starshop.common.annotation.UpdateCategoryTreeRedisCacheAnnotation)")
       private void pointCut(){
       }
 

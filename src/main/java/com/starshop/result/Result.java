@@ -27,6 +27,7 @@ public class Result<T> implements Serializable {
     //返回成功（无参）
     public static <T> Result<T> success(){
         Result<T> result = new Result<T>();
+        result.success = true;
         result.code =1;
         return result;
     }
@@ -34,6 +35,7 @@ public class Result<T> implements Serializable {
     //返回成功（有参）
     public static <T> Result<T> success(T data){
         Result<T> result = new Result<T>();
+        result.success = true;
         result.code =1;
         result.data = data;
         return result;
@@ -42,6 +44,7 @@ public class Result<T> implements Serializable {
     //返回失败
     public static <T> Result<T> error(String msg){
         Result<T> result = new Result<T>();
+        result.success = false;
         result.code =0;
         result.msg = msg;
         return result;

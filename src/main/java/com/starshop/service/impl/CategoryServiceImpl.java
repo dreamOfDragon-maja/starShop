@@ -126,7 +126,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         Map<String, Object> map = new HashMap<>(2);
         map.put(Category.Fields.id,id);
         map.put(Category.Fields.status, CommonStatus.getValueByNumber(Integer.valueOf(status)));
-        invalidateCache();
+        //刷新树缓存
+        refreshCategoryCache();
         return Result.success(map);
     }
 
@@ -145,8 +146,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (!isSuccess) {
             return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
         }
-        //清除缓存
-        invalidateCache();
+        //刷新树缓存
+        refreshCategoryCache();
         return Result.success(category);
     }
 
@@ -156,11 +157,15 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      */
     @Override
     public Result getCategoryTree() {
-        //TODO这里为什么前端的返回结果中没有数据只显示操作成功
         //获取分类缓存
         List<Category> categoryTree = caffeineUtils.getCategoryTree();
+        if (categoryTree == null) {
+            refreshCategoryCache();
+            categoryTree = caffeineUtils.getCategoryTree();
+        }
         return Result.success(categoryTree);
     }
+
 
     /**
      * 删除分类
@@ -174,7 +179,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (!isSuccess) {
             return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
         }
-        invalidateCache();
+        //刷新树缓存
+        refreshCategoryCache();
         return Result.success();
     }
 
@@ -191,8 +197,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (!isSuccess) {
             return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
         }
-        //清理树缓存
-        invalidateCache();
+        //刷新树缓存
+        refreshCategoryCache();
         //返回新增节点的子节点（或者返回成功提示）
         Category savedCategory = getCategoryChildren(category.getId());
         return Result.success(savedCategory);
@@ -201,6 +207,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     /**
      * 更新 categoryTreeId 在 Redis 里的缓存
      */
+    //TODO redis缓存有问题 测试一下aop
     @Override
     public void updateCategoryTreeRedisCache() {
         //key = category: + tree

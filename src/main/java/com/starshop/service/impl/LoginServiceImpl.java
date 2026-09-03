@@ -2,7 +2,6 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.starshop.common.annotation.Validate;
 import com.starshop.common.creation.NicknameCreation;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.LoginInfo;
@@ -128,7 +127,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
      * @return
      */
     @Override
-    @Validate(requiredPhone = true)
     public Result forgetPassword(String username, String phone, String passwordNew) {
         //1.根据username和phone查询一个用户
         SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, username).eq(SysUser::getPhone, phone).one();
@@ -160,7 +158,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
      * @return
      */
     @Override
-    @Validate
     public Result changePassword(String username, String passwordOld, String passwordNew) {
         //1.查询用户
         SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, username).one();
@@ -190,7 +187,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
      */
     @Override
     @Transactional
-    @Validate
     public Result<UserInfo> updateUserInfo(UserUpdateDTO userUpdateDTO) {
         //1.查询当前用户
         Long userId = Long.valueOf(BaseContext.getUserId());
@@ -255,7 +251,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
      * @return
      */
     @Override
-    @Validate
     public Result<Object> login(UserLoginDTO userLoginDTO) throws Exception {
         //1.查询用户
         SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userLoginDTO.getUsername()).one();
@@ -290,7 +285,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
      */
     @Override
     @Transactional
-    @Validate(requiredPhone = true)
     public Result register(UserLoginDTO userLoginDTO) {
         //1.根据username查询数据库
         SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userLoginDTO.getUsername()).one();

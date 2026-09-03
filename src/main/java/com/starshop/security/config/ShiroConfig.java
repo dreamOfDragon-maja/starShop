@@ -144,7 +144,7 @@ public class ShiroConfig {
         // 公开接口（无需认证）
         filterChainDefinitionMap.put("/api/user/login/**", "anon");
         filterChainDefinitionMap.put("/api/user/refresh/**", "anon");
-        filterChainDefinitionMap.put("/api/user/create/account", "anon");
+        filterChainDefinitionMap.put("/api/user/register", "anon");
         filterChainDefinitionMap.put("/api/user/forget/password", "anon");
         filterChainDefinitionMap.put("/api/user/change/password", "anon");
         filterChainDefinitionMap.put("/api/user/product/comment/**/show", "optionalJwt");

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.starshop.mapper.ProductMapper">
+    <select id="getBriefProduct" resultType="com.starshop.pojo.entity.Product">
+        <include refid="selectSimpleAllProduct_Where_SQL"/>
+        and p.id in
+        <foreach collection="productIdsList" open="(" close=")" separator="," item="productId">
+            #{productId}
+        </foreach>
+    </select>
+
+    <sql id="selectSimpleAllProduct_Where_SQL">
+        SELECT p.id ,
+        p.category_id,
+        p.name,
+        p.sell_point,
+        p.price ,
+        p.enterprise_price,
+        p.stock,
+        p.cover_image AS image,
+        p.description,
+        p.view_count,
+        p.sales_count,
+        p.status,
+        p.create_time,
+        p.update_time
+        FROM product p
+
+        WHERE p.status = 1
+    </sql>
+</mapper>

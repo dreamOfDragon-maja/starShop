@@ -207,7 +207,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     /**
      * 更新 categoryTreeId 在 Redis 里的缓存
      */
-    //TODO redis缓存有问题 测试一下aop
     @Override
     public void updateCategoryTreeRedisCache() {
         //key = category: + tree

@@ -7,6 +7,7 @@ import com.starshop.pojo.entity.Category;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductDocument;
 import com.starshop.pojo.entity.SysUser;
+import com.starshop.pojo.vo.SimpleProductVO;
 import org.mapstruct.*;
 
 /**
@@ -37,4 +38,7 @@ public interface CopyMapper {
      */
     @Mapping(target = "status", expression = "java(product.getStatus() != null ? product.getStatus().getNumber() : 1)")
     ProductDocument productToDocument(Product product);
+
+    @Mapping(source = "id" , target = "id")
+    SimpleProductVO productToSimpleProductVO(Product product);
 }

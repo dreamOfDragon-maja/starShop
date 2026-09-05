@@ -1,6 +1,6 @@
 package com.starshop.service;
 
-import com.starshop.pojo.entity.ProductDocument;
+import com.starshop.infrastructure.es.document.ProductDocument;
 
 import java.util.List;
 

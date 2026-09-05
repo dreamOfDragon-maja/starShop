@@ -1,6 +1,6 @@
 package com.starshop.controller.admin;
 
-import com.starshop.pojo.entity.ProductDocument;
+import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
 import com.starshop.service.ProductService;

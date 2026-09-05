@@ -5,6 +5,10 @@ spring:
     allow-circular-references: true
   config:
     import: classpath:redisCache.yml
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+    socket-timeout: 10s
 
 server:
   port: 8080

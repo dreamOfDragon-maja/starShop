@@ -2,17 +2,16 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.utils.JacksonUtils;
 import com.starshop.constant.BucketConstant;
 import com.starshop.constant.DataConstant;
 import com.starshop.constant.RedisKeyConstant;
+import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductMapper;
 import com.starshop.pojo.entity.Product;
-import com.starshop.pojo.entity.ProductDocument;
 import com.starshop.properties.RedisBucketTtlProperties;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.service.ProductRedisCacheService;

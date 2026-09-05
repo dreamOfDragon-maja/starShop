@@ -1,4 +1,4 @@
-package com.starshop.pojo.entity;
+package com.starshop.infrastructure.es.document;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

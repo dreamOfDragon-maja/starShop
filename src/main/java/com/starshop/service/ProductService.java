@@ -1,8 +1,8 @@
 package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.entity.Product;
-import com.starshop.pojo.entity.ProductDocument;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
 

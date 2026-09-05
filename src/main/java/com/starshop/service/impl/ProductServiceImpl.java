@@ -2,6 +2,8 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.common.result.CursorCommonEntity;
+import com.starshop.common.result.CursorCommonResult;
 import com.starshop.common.utils.BloomFilterUtils;
 import com.starshop.common.utils.JacksonUtils;
 import com.starshop.constant.DataConstant;
@@ -21,6 +23,7 @@ import com.starshop.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.ProductRedisCacheService;
 import com.starshop.service.ProductService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -81,6 +84,24 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             productDocumentResultList.add(productDocument);
         }
         return productDocumentResultList.stream().limit(limit).toList();
+    }
+
+    /**
+     * 游标查询指定分类下的简单商品列表, 通过 es 进行查询
+     * @param cursorCommonEntity 游标参数实体
+     * @return 游标返回实体
+     */
+    @Override
+    public CursorCommonResult getCategorySimpleProduct(CursorCommonEntity cursorCommonEntity, Long categoryId, boolean isFirstCategoryId) {
+        //获取数据
+        String sortType = cursorCommonEntity.getSortType();
+        String sortValue = cursorCommonEntity.getSortValue();
+        Long sortId = cursorCommonEntity.getSortId();
+        Integer querySize = cursorCommonEntity.getQuerySize();
+
+        //将sortType转成枚举
+
+        return null;
     }
 
     /**

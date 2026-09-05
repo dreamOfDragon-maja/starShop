@@ -1,10 +1,14 @@
 package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.starshop.common.result.CursorCommonEntity;
+import com.starshop.common.result.CursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -30,4 +34,13 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     Result<?> getProductDetail(String productId, String userId);
+
+    /**
+     * 分类游标查询指定分类下的简单商品列表
+     * @param cursorCommonEntity
+     * @param categoryId
+     * @param isFirstCategoryId
+     * @return
+     */
+    CursorCommonResult getCategorySimpleProduct(@Valid @NotNull CursorCommonEntity cursorCommonEntity, Long categoryId, boolean isFirstCategoryId);
 }

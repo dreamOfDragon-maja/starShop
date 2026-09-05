@@ -1,4 +1,4 @@
-package com.starshop.common.annotation;
+package com.starshop.common.annotation.business;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

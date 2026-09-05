@@ -2,7 +2,7 @@ package com.starshop.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.starshop.common.result.UserInfo;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

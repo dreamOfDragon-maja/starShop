@@ -10,7 +10,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.starshop.constant.CaffeineConstant;
 import com.starshop.mapper.CategoryMapper;
 import com.starshop.mapper.ProductSearchKeywordMapper;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Category;
 import com.starshop.pojo.entity.ProductSearchKeyword;
 import jakarta.annotation.Resource;

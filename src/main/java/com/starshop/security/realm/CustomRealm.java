@@ -7,7 +7,7 @@ import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.exception.InvalidCredentialsException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.SysPermission;
 import com.starshop.pojo.entity.SysRole;
 import com.starshop.pojo.entity.SysUser;

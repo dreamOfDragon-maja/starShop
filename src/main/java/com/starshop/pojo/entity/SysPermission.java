@@ -1,6 +1,6 @@
 package com.starshop.pojo.entity;
 
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import lombok.Data;
 
 import java.io.Serial;

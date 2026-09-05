@@ -1,4 +1,4 @@
-package com.starshop.pojo.emums;
+package com.starshop.pojo.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

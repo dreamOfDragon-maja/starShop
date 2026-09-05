@@ -1,4 +1,4 @@
-package com.starshop.pojo.emums;
+package com.starshop.pojo.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;

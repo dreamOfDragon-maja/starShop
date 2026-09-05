@@ -2,7 +2,7 @@ package com.starshop.job.init;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.starshop.common.utils.BloomFilterUtils;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Product;
 import com.starshop.service.ProductService;
 import jakarta.annotation.Resource;

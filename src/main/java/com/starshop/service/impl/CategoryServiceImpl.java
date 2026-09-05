@@ -2,7 +2,7 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.starshop.common.annotation.UpdateCategoryTreeRedisCacheAnnotation;
+import com.starshop.common.annotation.business.UpdateCategoryTreeRedisCacheAnnotation;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.utils.CaffeineUtils;
 import com.starshop.constant.CaffeineConstant;
@@ -12,7 +12,7 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.CategoryMapper;
 import com.starshop.pojo.dto.CategoryDTO;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Category;
 import com.starshop.result.Result;
 import com.starshop.service.CategoryService;
@@ -20,7 +20,6 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.smartcardio.CommandAPDU;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;

@@ -2,7 +2,7 @@ package com.starshop.pojo.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.starshop.constant.DatePatternConstants;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

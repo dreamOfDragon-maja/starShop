@@ -1,7 +1,7 @@
 package com.starshop.infrastructure.es.mapstruct;
 
 import com.starshop.infrastructure.es.document.ProductDocument;
-import com.starshop.pojo.emums.CommonStatus;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.vo.SimpleProductVO;
 import org.mapstruct.Mapper;

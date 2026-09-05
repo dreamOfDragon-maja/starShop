@@ -1,5 +1,6 @@
-package com.starshop.pojo.emums;
+package com.starshop.pojo.enums;
 
+import com.starshop.common.annotation.common.ParamCheckAnnotation;
 import com.starshop.common.utils.DateUtils;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.entity.Product;
@@ -94,7 +95,7 @@ public enum ProductSortTypeEnum {
         return sortValue;
     }
 
-   // @ParamCheckAnnotation
+    @ParamCheckAnnotation
     public static String getSortValueByProductDocument(ProductSortTypeEnum productSortTypeEnum , ProductDocument productDocument){
         switch (productSortTypeEnum){
             case DEFAULT -> {return productDocument.getSalesCount().toString();}

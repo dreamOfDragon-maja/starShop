@@ -1,4 +1,4 @@
-package com.starshop.common.aspect;
+package com.starshop.common.aspect.business;
 
 import com.starshop.result.Result;
 import com.starshop.service.CategoryService;

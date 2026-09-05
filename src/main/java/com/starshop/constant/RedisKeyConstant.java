@@ -27,7 +27,8 @@ public class RedisKeyConstant {
     public static final String PREFIX_PRODUCT = "product:";
     public static final String PREFIX_COPY = "copy:";
     public static final String ID_LIST="idList";
-
+    public static final String DETAIL = "detail:";
+    public static final String COLLECTION = "collection:";
 
     /**
      * Bucket 读写标记前缀（仅用于 Redisson RBucket 锁标记，不可与业务数据 key 混用）

@@ -2,19 +2,33 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.common.utils.BloomFilterUtils;
+import com.starshop.common.utils.JacksonUtils;
+import com.starshop.constant.DataConstant;
+import com.starshop.constant.MessageConstant;
+import com.starshop.constant.RedisKeyConstant;
+import com.starshop.infrastructure.redis.connect.RedisConnector;
+import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductMapper;
+import com.starshop.pojo.emums.CommonStatus;
 import com.starshop.pojo.entity.Product;
+import com.starshop.pojo.entity.ProductCollection;
 import com.starshop.pojo.entity.ProductDocument;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.properties.RedisCacheCountProperties;
+import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
+import com.starshop.service.CollectionService;
 import com.starshop.service.ProductRedisCacheService;
 import com.starshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +41,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private final ProductMapper productMapper;
 
     private final CopyMapper copyMapper;
+
+    private final BloomFilterUtils bloomFilterUtils;
+
+    private final RedisCacheTtlProperties redisCacheTtlProperties;
+
+    private final CollectionService collectionService;
 
     //TODO es优化
     /**
@@ -61,6 +81,76 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             productDocumentResultList.add(productDocument);
         }
         return productDocumentResultList.stream().limit(limit).toList();
+    }
+
+    /**
+     * 获取商品详细信息
+     * @param productId
+     * @param userId
+     * @return
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Result<?> getProductDetail(String productId, String userId) {
+        if (StringUtils.isBlank(productId)) {
+            return Result.error(MessageConstant.TOM_CAT_ERROR);
+        }
+        //通过布隆过滤器判断是否存在
+        if (!bloomFilterUtils.contains(Long.valueOf(productId))){
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        if (StringUtils.isBlank(userId)) {
+            userId = DataConstant.NEGATIVE_ONE_STRING;
+        }
+        String productDetailKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.DETAIL + productId;
+        String productCollectionKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.COLLECTION + productId;
+        //从redis中查询信息
+        Map<String, Object> productDetailMap = RedisConnector.opsForHash().entries(productDetailKey);
+        Set<Object> userIdSet =(Set<Object>)RedisConnector.opsForValue().get(productCollectionKey);
+        //如果redis无信息，回到数据库中查询
+        if (productDetailMap.isEmpty()) {
+            Product product = productMapper.selectByProductId(productId, userId);
+            //数据不存在
+            if (Objects.isNull(product)) {
+                //在redis中写入空对象防缓存穿透
+                StringRedisConnector.opsForHash().putAll(productDetailKey,Map.of(Product.Fields.id,productId));
+                return Result.error(MessageConstant.DATA_ERROR);
+            }
+            //数据存在,处理收藏问题
+            if (!StringUtils.equals(product.getIsCollection().toString(), CommonStatus.INACTIVE.getNumber().toString())) {
+                product.setIsCollection(CommonStatus.ACTIVE.getNumber());
+            }
+            //转成map存入redis
+            Map<String, Object> productDetailResultMap = JacksonUtils.toMap(product);
+            productDetailResultMap.put(Product.Fields.isCollection,CommonStatus.INACTIVE.getNumber());
+            RedisConnector.opsForHash().putAll(productDetailKey,productDetailResultMap);
+            //设置过期时间
+            StringRedisConnector.expire(productDetailKey,redisCacheTtlProperties.getProductDetailTtl(), TimeUnit.SECONDS);
+
+            return Result.success(product);
+        }
+        //如果redis一开始就有数据，有可能是空对象
+        if (productDetailMap.size() == DataConstant.ONE_INT) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //解决默认的不收藏问题
+        if (CollectionUtils.isEmpty(userIdSet)) {
+            //从数据库查
+            List<ProductCollection> productCollectionList = collectionService.lambdaQuery().eq(ProductCollection::getProductId, productId).list();
+            userIdSet = productCollectionList.stream().map(ProductCollection::getUserId).collect(Collectors.toSet());
+            //写入redis并为商品设置过期时间
+            RedisConnector.opsForValue().set(productCollectionKey,userIdSet);
+            RedisConnector.expire(productDetailKey,redisCacheTtlProperties.getProductCollectionTtl(),TimeUnit.SECONDS);
+
+        }
+        //为每一位用户设置收藏
+        Product resultProduct = JacksonUtils.fromMap(productDetailMap, Product.class);
+        if (userIdSet.contains(Long.valueOf(userId))) {
+            resultProduct.setIsCollection(CommonStatus.ACTIVE.getNumber());
+        } else {
+            resultProduct.setIsCollection(CommonStatus.INACTIVE.getNumber());
+        }
+        return Result.success(resultProduct);
     }
 
     /**

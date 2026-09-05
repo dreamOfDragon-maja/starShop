@@ -22,4 +22,12 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     Result<List<SimpleProductVO>> getBriefProduct(String productIds);
+
+    /**
+     * 获取商品详细信息
+     * @param productId
+     * @param userId
+     * @return
+     */
+    Result<?> getProductDetail(String productId, String userId);
 }

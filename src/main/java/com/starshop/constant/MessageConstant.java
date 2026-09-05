@@ -28,4 +28,5 @@ public class MessageConstant {
     public static final String SYSTEM_ERROR = "服务器异常";
     public static final String ACCOUNT_LOCKED = "账号被锁定";
     public static final String DATA_ERROR = "数据异常,请重试";
+    public static final String TOM_CAT_ERROR = "系统繁忙，请稍后重试";
 }

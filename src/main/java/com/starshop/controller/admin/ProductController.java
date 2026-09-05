@@ -5,10 +5,7 @@ import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
 import com.starshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,5 +34,17 @@ public class ProductController {
     @GetMapping("/product/brief/list")
     public Result<List<SimpleProductVO>> getBriefProduct(@RequestParam(value = "productIds",defaultValue = "") String productIds){
         return productService.getBriefProduct(productIds);
+    }
+
+    /**
+     * 获取商品详细信息
+     * @param productId
+     * @param userId
+     * @return
+     */
+    @GetMapping("/product/detail")
+    public Result<?> getProductDetail(@RequestParam("productId") String productId ,
+                                      @RequestHeader(value = "X-User-Id", required = false) String userId){
+        return productService.getProductDetail(productId,userId);
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.common.utils.JacksonUtils;
 import com.starshop.constant.BucketConstant;
 import com.starshop.constant.DataConstant;
 import com.starshop.constant.RedisKeyConstant;
@@ -40,8 +41,6 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
     private final ProductMapper productMapper;
 
     private final CopyMapper copyMapper;
-
-    private final ObjectMapper objectMapper;
 
 
     //TODO 后续抽出来
@@ -152,13 +151,8 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
         RedisConnector.opsForHash().putAll(dataCopyKey, hashMap);
 
         List<Long> idList = documentList.stream().map(ProductDocument::getId).toList();
-        try {
-            String json = objectMapper.writeValueAsString(idList);
-            StringRedisConnector.opsForValue().set(idListCopyKey, json);
-        } catch (Exception e) {
-            log.error("序列化热门商品ID列表失败", e);
-            return;
-        }
+        String json = JacksonUtils.toJson(idList);
+        StringRedisConnector.opsForValue().set(idListCopyKey, json);
 
         //再加锁标记写入redis
         RBucket<BucketConstant.BucketSign> bucket = redissonClient.getBucket(signKey);
@@ -201,7 +195,7 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
                 if (json == null || json.isBlank()) {
                     return Collections.emptyList();
                 }
-                return objectMapper.readValue(json, new TypeReference<>() {});
+                return JacksonUtils.fromJson(json, new TypeReference<>() {});
             } catch (Exception e) {
                 log.error("查询redis热门商品ID列表失败", e);
                 RedisConnector.delete(idListKey);
@@ -222,7 +216,7 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
                 if (json == null || json.isBlank()) {
                     return Collections.emptyList();
                 }
-                return objectMapper.readValue(json, new TypeReference<>() {});
+                return JacksonUtils.fromJson(json, new TypeReference<>() {});
             } catch (Exception e) {
                 log.error("查询redis热门商品ID副本列表失败", e);
                 RedisConnector.delete(idListCopyKey);

@@ -11,4 +11,6 @@ import java.util.List;
 public interface ProductMapper extends BaseMapper<Product> {
 
     List<Product> getBriefProduct(@Param("productIdsList") List<Long> productIdsList);
+
+    Product selectByProductId(String productId, String userId);
 }

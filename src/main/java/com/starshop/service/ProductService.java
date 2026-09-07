@@ -43,4 +43,12 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     CursorCommonResult getCategorySimpleProduct(@Valid @NotNull CursorCommonEntity cursorCommonEntity, Long categoryId, boolean isFirstCategoryId);
+
+    /**
+     * 关键词游标分类搜索商品
+     * @param cursorCommonEntity
+     * @param keyword
+     * @return
+     */
+    CursorCommonResult searchProductList(@Valid CursorCommonEntity cursorCommonEntity, String keyword);
 }

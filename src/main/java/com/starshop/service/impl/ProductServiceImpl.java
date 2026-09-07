@@ -93,6 +93,29 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
+     * 关键词游标分类搜索商品
+     * @param cursorCommonEntity
+     * @param keyword
+     * @return
+     */
+    @Override
+    public CursorCommonResult searchProductList(CursorCommonEntity cursorCommonEntity, String keyword) {
+        //获取数据
+        String sortType = cursorCommonEntity.getSortType();
+        String sortValue = cursorCommonEntity.getSortValue();
+        Long sortId = cursorCommonEntity.getSortId();
+        Integer querySize = cursorCommonEntity.getQuerySize();
+        //将sortType转成枚举
+        ProductSortTypeEnum productSortTypeEnum = ProductSortTypeEnum.getByValue(sortType);
+        //对sortValue进行格式化
+        sortValue = ProductSortTypeEnum.filterFormatSortValue(productSortTypeEnum,sortValue);
+        //es查询
+        List<ProductDocument> productDocuments = productDocumentService.searchByCursorByName(
+                querySize, productSortTypeEnum, sortValue, sortId, keyword);
+        return getCursorCommonResult(productDocuments,querySize,productSortTypeEnum,sortType);
+    }
+
+    /**
      * 游标查询指定分类下的简单商品列表, 通过 es 进行查询
      * @param cursorCommonEntity 游标参数实体
      * @return 游标返回实体
@@ -109,7 +132,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         ProductSortTypeEnum productSortTypeEnum = ProductSortTypeEnum.getByValue(sortType);
 
         //对sortValue进行格式化
-        ProductSortTypeEnum.filterFormatSortValue(productSortTypeEnum,sortValue);
+        sortValue = ProductSortTypeEnum.filterFormatSortValue(productSortTypeEnum,sortValue);
 
         //通过es查询
         List<ProductDocument> productDocuments = productDocumentService.searchByCursorByCategoryId(

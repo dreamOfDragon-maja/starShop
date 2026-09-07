@@ -56,4 +56,23 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
         return productEsRepository.searchCursorByProductSortTypeAndCategoryId(productSortTypeEnum, categoryId, limit, sortValue, productId);
 
     }
+    /**
+     * 根据商品关键词进行查询
+     * @param limit 查询数
+     * @param productSortTypeEnum 商品排序枚举
+     * @param sortValue 游标开始值
+     * @param productId 商品 id
+     * @param keyword 关键词
+     * @return 查询文档列表
+     */
+    @Override
+    public List<ProductDocument> searchByCursorByName(Integer limit, ProductSortTypeEnum productSortTypeEnum, String sortValue, Long productId, String keyword) {
+        //首次游标查询
+        if (Objects.isNull(sortValue) || Objects.isNull(productId)) {
+            return productEsRepository.searchLimitByProductSortTypeAndProductName(productSortTypeEnum, keyword, limit);
+        }
+        //游标查询
+        return productEsRepository.searchCursorByProductSortTypeAndProductName(productSortTypeEnum, keyword, limit, sortValue, productId);
+
+    }
 }

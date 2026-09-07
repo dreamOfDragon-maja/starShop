@@ -64,4 +64,17 @@ public class ProductController {
         CursorCommonResult cursorCommonResult = productService.getCategorySimpleProduct(cursorCommonEntity,categoryId,isFirstCategoryId);
         return Result.success(cursorCommonResult);
     }
+
+    /**
+     * 关键词游标分类搜索商品,默认排序方式为default(销量)
+     * @param cursorCommonEntity
+     * @param keyword
+     * @return
+     */
+    @GetMapping("/product/search")
+    public Result<CursorCommonResult> searchProductList(@Valid CursorCommonEntity cursorCommonEntity ,String keyword){
+        CursorCommonResult cursorCommonResult = productService.searchProductList(cursorCommonEntity,keyword);
+        return Result.success(cursorCommonResult);
+    }
+
 }

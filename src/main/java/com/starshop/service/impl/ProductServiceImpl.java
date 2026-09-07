@@ -10,12 +10,15 @@ import com.starshop.constant.DataConstant;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.es.document.ProductDocument;
+import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
+import com.starshop.infrastructure.es.service.ProductDocumentService;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductMapper;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductCollection;
+import com.starshop.pojo.enums.ProductSortTypeEnum;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.properties.RedisCacheTtlProperties;
@@ -49,6 +52,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private final RedisCacheTtlProperties redisCacheTtlProperties;
 
     private final CollectionService collectionService;
+
+    private final ProductDocumentService productDocumentService;
+
+    private final EsCopyMapper esCopyMapper;
 
     //TODO es优化
     /**
@@ -99,8 +106,58 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Integer querySize = cursorCommonEntity.getQuerySize();
 
         //将sortType转成枚举
+        ProductSortTypeEnum productSortTypeEnum = ProductSortTypeEnum.getByValue(sortType);
 
-        return null;
+        //对sortValue进行格式化
+        ProductSortTypeEnum.filterFormatSortValue(productSortTypeEnum,sortValue);
+
+        //通过es查询
+        List<ProductDocument> productDocuments = productDocumentService.searchByCursorByCategoryId(
+                querySize, productSortTypeEnum, sortValue, sortId, categoryId, isFirstCategoryId);
+
+        return getCursorCommonResult(productDocuments, querySize, productSortTypeEnum, sortType);
+
+    }
+
+    /**
+     * 游标结果封装方法
+     * @param productDocuments 在商品文档服务 查询出来的 原始商品文档
+     * @param querySize 查询数量
+     * @param productSortTypeEnum 商品排序种类枚举
+     * @param sortType 排序种类字符串
+     * @return 游标结果
+     */
+    private CursorCommonResult getCursorCommonResult(List<ProductDocument> productDocuments, Integer querySize, ProductSortTypeEnum productSortTypeEnum, String sortType) {
+        boolean isEnd = false;
+        //es中无数据停止查询
+        if (productDocuments.isEmpty()) {
+            return CursorCommonResult.builder()
+                    .isEnd(true)
+                    .list(Collections.emptyList())
+                    .build();
+        }
+
+        if (querySize > productDocuments.size()) {
+            isEnd = true;
+        }
+
+        //获取最后一个商品
+        ProductDocument productDocument = productDocuments.get(productDocuments.size() - 1);
+        String sortValueByProductDocument = ProductSortTypeEnum.getSortValueByProductDocument(productSortTypeEnum, productDocument);
+        //返回给前端以再次进行es查询
+        CursorCommonEntity cursorCommonEntity = CursorCommonEntity.builder()
+                .sortType(sortType)
+                .sortValue(sortValueByProductDocument)
+                .sortId(productDocument.getId())
+                .querySize(querySize)
+                .build();
+
+        List<SimpleProductVO> simpleProductVOS = productDocuments.stream().map(esCopyMapper::ProductDocumentToSimpleProductVO).toList();
+        return CursorCommonResult.builder()
+                .isEnd(isEnd)
+                .list(simpleProductVOS)
+                .cursorCommonEntity(cursorCommonEntity)
+                .build();
     }
 
     /**

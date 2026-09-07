@@ -1,4 +1,51 @@
 package com.starshop.infrastructure.es.repositery;
 
+import com.starshop.infrastructure.es.document.ProductDocument;
+import com.starshop.pojo.enums.ProductSortTypeEnum;
+
+import java.util.List;
+
 public interface ProductEsRepository {
+    /**
+     * 根据查询种类和分类 id 首次进行游标查询 (无需开始游标)
+     * @param productSortTypeEnum 商品排序格式
+     * @param categoryIdList 分类 id 集合
+     * @param limit 查询数
+     * @return 商品文档列表
+     */
+    List<ProductDocument> searchLimitByProductSortTypeAndCategoryIdList(ProductSortTypeEnum productSortTypeEnum, List<Long> categoryIdList, Integer limit);
+
+
+    /**
+     * 根据查询种类和分类 id 进行游标查询 (需要开始游标)
+     * @param productSortTypeEnum 商品排序格式
+     * @param categoryIdList 分类 id 集合
+     * @param limit 查询数
+     * @param sortValue 开始游标值
+     * @param productId 开始商品 id
+     * @return 商品文档列表
+     */
+    List<ProductDocument> searchCursorByProductSortTypeAndCategoryIdList(ProductSortTypeEnum productSortTypeEnum, List<Long> categoryIdList, Integer limit, String sortValue, Long productId);
+
+    /**
+     * 根据查询种类和分类 id 首次进行游标查询 (无需开始游标)
+     * @param productSortTypeEnum 商品排序格式
+     * @param categoryId 查询商品分类 id
+     * @param limit 查询数
+     * @return 商品文档列表
+     */
+    List<ProductDocument> searchLimitByProductSortTypeAndCategoryId(ProductSortTypeEnum productSortTypeEnum, Long categoryId, Integer limit);
+
+
+    /**
+     * 根据查询种类和分类 id 进行游标查询 (需要开始游标)
+     * @param productSortTypeEnum 商品排序格式
+     * @param categoryId 查询商品分类 id
+     * @param limit 查询数
+     * @param sortValue 开始游标值
+     * @param productId 开始商品 id
+     * @return 商品文档列表
+     */
+    List<ProductDocument> searchCursorByProductSortTypeAndCategoryId(ProductSortTypeEnum productSortTypeEnum, Long categoryId, Integer limit, String sortValue, Long productId);
+
 }

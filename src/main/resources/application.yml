@@ -5,8 +5,17 @@ spring:
     allow-circular-references: true
   config:
     import: classpath:redisCache.yml
+  datasource:
+    url: jdbc:mysql://${starShop.datasource.host}:${starShop.datasource.port}/${starShop.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${starShop.datasource.username}
+    password: ${starShop.datasource.password}
+    driver-class-name: ${starShop.datasource.driver-class-name}
+    druid:
+      initial-size: 5
+      max-active: 20
+      min-idle: 5
   elasticsearch:
-    uris: http://localhost:9200
+    uris: http://192.168.100.128:9200
     connection-timeout: 5s
     socket-timeout: 10s
 

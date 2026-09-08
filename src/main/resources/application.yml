@@ -37,7 +37,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 rocketmq:
-  name-server: 127.0.0.1:9876
+  name-server: 192.168.100.128:9876
   producer:
     group: my-producer-group
     send-message-timeout: 10000

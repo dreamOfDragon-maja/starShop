@@ -57,7 +57,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     private final EsCopyMapper esCopyMapper;
 
-    //TODO es优化
     /**
      * 获取热门商品
      * 按照销量进行排名

@@ -3,6 +3,7 @@ package com.starshop.controller.admin;
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
+import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
 import com.starshop.service.ProductService;
@@ -19,15 +20,18 @@ public class ProductController {
 
     private final ProductService productService;
 
+    private final EsCopyMapper esCopyMapper;
+
 
     /**
      * 获取热门商品
      * @return
      */
     @GetMapping("/product/hot")
-    public Result<List<ProductDocument>> getHotProduct(@RequestParam(name = "limit", defaultValue = "10") Integer limit){
-         List<ProductDocument> hotProduct = productService.getHotProduct(limit);
-         return Result.success(hotProduct);
+    public Result<List<SimpleProductVO>> getHotProduct(@RequestParam(name = "limit", defaultValue = "10") Integer limit){
+        List<ProductDocument> hotProduct = productService.getHotProduct(limit);
+        List<SimpleProductVO> simpleProductVOS = hotProduct.stream().map(esCopyMapper::ProductDocumentToSimpleProductVO).toList();
+        return Result.success(simpleProductVOS);
     }
 
     /**

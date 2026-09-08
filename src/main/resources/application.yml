@@ -27,6 +27,16 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: my-producer-group
+    send-message-timeout: 10000
+  consumer:
+    group: my-consumer-group
+    message-model: BROADCASTING
+    pull-batch-size: 100
+
 # 日志
 logging:
   level:

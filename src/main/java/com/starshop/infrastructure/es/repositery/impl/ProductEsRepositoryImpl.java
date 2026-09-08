@@ -3,6 +3,7 @@ package com.starshop.infrastructure.es.repositery.impl;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -16,6 +17,7 @@ import com.starshop.pojo.enums.ProductSortTypeEnum;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,7 +30,38 @@ import java.util.stream.Collectors;
 public class ProductEsRepositoryImpl implements ProductEsRepository {
 
     private final ElasticsearchClient esClient;
+    private static final String PRODUCT_INDEX = EsIndexEnum.PRODUCT.getIndexName();
 
+    /**
+     * 批量保存商品文档
+     * @param documents 要批量保存的文档
+     */
+    @Override
+    public void batchSave(List<ProductDocument> documents) {
+        if (CollectionUtils.isEmpty(documents)) {
+            return;
+        }
+        try {
+            BulkRequest.Builder bulkBuilder = new BulkRequest.Builder();
+            for (ProductDocument doc : documents) {
+                if (doc == null || doc.getId() == null) {
+                    throw new IllegalArgumentException("商品文档 或 ID不能为空");
+                }
+                //指定索引库和文档id
+                bulkBuilder.operations(op -> op
+                        .index(idx -> idx
+                                .index(PRODUCT_INDEX)
+                                .id(doc.getId().toString())
+                                .document(doc)
+                        )
+                );
+            }
+            esClient.bulk(bulkBuilder.build());
+        } catch (IOException e) {
+            throw new RuntimeException("ES 批量保存商品失败", e);
+        }
+
+    }
 
     /**
      * 根据查询种类和商品名 进行游标查询(需要开始游标)

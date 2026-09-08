@@ -199,6 +199,13 @@
             <version>4.1.101.Final</version>
         </dependency>
 
+        <!-- rocketmq 适配 SpringBoot3.x -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
         <!-- 阿里云 OSS -->
         <dependency>
             <groupId>com.aliyun.oss</groupId>

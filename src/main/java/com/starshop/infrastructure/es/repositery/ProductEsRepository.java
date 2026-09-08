@@ -68,4 +68,12 @@ public interface ProductEsRepository {
      * @return 商品文档列表
      */
     List<ProductDocument> searchCursorByProductSortTypeAndProductName(ProductSortTypeEnum productSortTypeEnum, String keyword, Integer limit, String sortValue, Long productId);
+
+
+    /**
+     * 批量保存商品文档
+     * @param documents 要批量保存的文档
+     */
+    void batchSave(List<ProductDocument> documents);
+
 }

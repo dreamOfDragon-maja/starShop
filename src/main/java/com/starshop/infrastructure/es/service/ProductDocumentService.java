@@ -28,4 +28,11 @@ public interface ProductDocumentService {
      * @return 查询文档列表
      */
     List<ProductDocument> searchByCursorByName(Integer limit, ProductSortTypeEnum productSortTypeEnum ,String sortValue, Long productId, String keyword);
+
+
+    /**
+     * 批量保存商品文档列表
+     * @param productDocumentList 商品文档列表
+     */
+    void batchSaveProductDocument(List<ProductDocument> productDocumentList);
 }

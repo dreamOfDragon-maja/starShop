@@ -67,12 +67,21 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
      */
     @Override
     public List<ProductDocument> searchByCursorByName(Integer limit, ProductSortTypeEnum productSortTypeEnum, String sortValue, Long productId, String keyword) {
-        //首次游标查询
+        //首次进行游标查询
         if (Objects.isNull(sortValue) || Objects.isNull(productId)) {
             return productEsRepository.searchLimitByProductSortTypeAndProductName(productSortTypeEnum, keyword, limit);
         }
         //游标查询
         return productEsRepository.searchCursorByProductSortTypeAndProductName(productSortTypeEnum, keyword, limit, sortValue, productId);
 
+    }
+
+    /**
+     * 批量保存商品文档列表
+     * @param productDocumentList 商品文档列表
+     */
+    @Override
+    public void batchSaveProductDocument(List<ProductDocument> productDocumentList) {
+        productEsRepository.batchSave(productDocumentList);
     }
 }

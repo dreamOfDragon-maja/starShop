@@ -3,6 +3,7 @@ package com.starshop.infrastructure.es.repositery.impl;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -14,6 +15,7 @@ import com.starshop.infrastructure.es.repositery.ProductEsRepository;
 import com.starshop.pojo.enums.CommonSortTypeEnum;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
+import com.starshop.pojo.vo.SimpleProductVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,34 @@ public class ProductEsRepositoryImpl implements ProductEsRepository {
 
     private final ElasticsearchClient esClient;
     private static final String PRODUCT_INDEX = EsIndexEnum.PRODUCT.getIndexName();
+
+    /**
+     * 根据 id 列表获取商品文档列表
+     * @param idList 商品 id 列表
+     * @return 商品文档列表
+     */
+    @Override
+    public List<ProductDocument> getByIdList(List<Long> idList) {
+        if (CollectionUtils.isEmpty(idList)) {
+            return List.of();
+        }
+
+        try {
+            //构造查询条件
+            Query query = Query.of(q -> q.ids(i -> i.values(idList.stream().map(String::valueOf).collect(Collectors.toList()))));
+            SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s.index(PRODUCT_INDEX)
+                            .query(query),
+                    ProductDocument.class
+            );
+            return searchResponse.hits().hits().stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("ES 批量根据ID查询失败", e);
+        }
+
+
+    }
 
     /**
      * 批量保存商品文档

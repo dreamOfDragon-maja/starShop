@@ -14,7 +14,10 @@ import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.infrastructure.es.service.ProductDocumentService;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
+import com.starshop.infrastructure.rocketmq.constant.failed.MqFailedMessageConstant;
+import com.starshop.infrastructure.rocketmq.constant.product.MqProductConstant;
 import com.starshop.mapper.ProductMapper;
+import com.starshop.pojo.entity.MqConsumerFailedMsg;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductCollection;
@@ -24,11 +27,15 @@ import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
 import com.starshop.service.CollectionService;
+import com.starshop.service.MqConsumerFailedMsgService;
 import com.starshop.service.ProductRedisCacheService;
 import com.starshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -56,6 +63,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private final ProductDocumentService productDocumentService;
 
     private final EsCopyMapper esCopyMapper;
+
+    private final RocketMQTemplate rocketMQTemplate;
+
+    private final MqConsumerFailedMsgService mqConsumerFailedMsgService;
 
     /**
      * 获取热门商品
@@ -272,7 +283,21 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         for (Long id : productIdList) {
             resultMap.put(id,null);
         }
-        //TODO 后续用es查询
+        //用es查询
+        List<SimpleProductVO> simpleProductVOListByEs = productDocumentService.getProductDocumentByIdList(productIdList)
+                .stream().map(esCopyMapper::ProductDocumentToSimpleProductVO).toList();
+
+        for (SimpleProductVO s : simpleProductVOListByEs) {
+            //存入resultMap方便组装正确的结果顺序
+            resultMap.put(s.getId(),s);
+        }
+        if (productIdList.size()==simpleProductVOListByEs.size()) {
+            for (Long id : productIdList) {
+                SimpleProductVO simpleProductVO = resultMap.get(id);
+                resultList.add(simpleProductVO);
+            }
+            return Result.success(resultList);
+        }
 
         //创建一个用于放需要查询数据库的商品id
         List<Long> needQueryBySQLIdList = new ArrayList<>();
@@ -284,7 +309,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         //通过idlist去查询数据库
         List<Product> list = productMapper.getBriefProduct(needQueryBySQLIdList);
 
-        //TODO使用 mq 消息通知进行数据同步
+        //使用 mq 消息通知进行数据同步
+        asyncSaveProductDocumentBySendMqMessage(list,0);
 
         list.stream().map(copyMapper::productToSimpleProductVO)
                 .forEach(simpleProductVO -> {
@@ -297,5 +323,41 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
 
         return Result.success(resultList);
+    }
+
+    /**
+     * 异步通知 mq 同步商品文档到 es
+     * 异常发送三次
+     * @param productList 商品文档列表
+     */
+    void asyncSaveProductDocumentBySendMqMessage(List<Product> productList, int retryCount){
+        List<ProductDocument> productDocumentList = productList.stream().map(esCopyMapper::ProductToProductDocument).toList();
+
+        String destination = MqProductConstant.TOPIC_PRODUCT + ":" + MqProductConstant.TAG_PRODUCT_DOCUMENT_SYNC;
+        //设置最大尝试次数
+        int maxRetry = 2;
+        //发送消息
+        rocketMQTemplate.asyncSend(destination,productDocumentList, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                if (retryCount < maxRetry) {
+                    asyncSaveProductDocumentBySendMqMessage(productList,retryCount +1);
+                }else {
+                    //保存错误信息
+                    MqConsumerFailedMsg failedMsg = MqConsumerFailedMsg.builder()
+                            .topic(MqProductConstant.TOPIC_PRODUCT)
+                            .tag(MqProductConstant.TAG_PRODUCT_DOCUMENT_SYNC)
+                            .errorMsg(MqFailedMessageConstant.MQ_FAILED_ASYNC_SEND)
+                            .body("同步商品数据到es失败,失败商品: " + productList)
+                            .retryCount(retryCount)
+                            .build();
+                    mqConsumerFailedMsgService.save(failedMsg);
+                }
+            }
+        });
     }
 }

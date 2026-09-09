@@ -2,6 +2,7 @@ package com.starshop.infrastructure.es.service;
 
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
+import com.starshop.pojo.vo.SimpleProductVO;
 
 import java.util.List;
 
@@ -35,4 +36,11 @@ public interface ProductDocumentService {
      * @param productDocumentList 商品文档列表
      */
     void batchSaveProductDocument(List<ProductDocument> productDocumentList);
+
+    /**
+     * 通过 id 列表批量获取商品文档
+     * @param idList id 列表
+     * @return 商品文档列表
+     */
+    List<ProductDocument> getProductDocumentByIdList(List<Long> idList);
 }

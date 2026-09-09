@@ -2,6 +2,7 @@ package com.starshop.infrastructure.es.repositery;
 
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
+import com.starshop.pojo.vo.SimpleProductVO;
 
 import java.util.List;
 
@@ -76,4 +77,11 @@ public interface ProductEsRepository {
      */
     void batchSave(List<ProductDocument> documents);
 
+
+    /**
+     * 根据 id 列表获取商品文档列表
+     * @param idList 商品 id 列表
+     * @return 商品文档列表
+     */
+    List<ProductDocument> getByIdList(List<Long> idList);
 }

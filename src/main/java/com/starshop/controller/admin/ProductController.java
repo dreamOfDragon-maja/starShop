@@ -95,4 +95,16 @@ public class ProductController {
         List<SimpleProductVO> simpleProductVOS = productRelated.stream().map(esCopyMapper::ProductDocumentToSimpleProductVO).toList();
         return Result.success(simpleProductVOS);
     }
+
+
+    /**
+     * 查询商品规格价格
+     * @param productId 商品id
+     * @param specId 规格id
+     * @return
+     */
+    @GetMapping("/product/spec/price")
+    public Result<?> getProductSpecPrice(@RequestParam String productId,@RequestParam String specId){
+        return productService.getProductSpecPrice(productId,specId);
+    }
 }

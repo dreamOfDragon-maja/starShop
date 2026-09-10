@@ -6,7 +6,9 @@ import com.starshop.pojo.dto.CategoryDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.entity.Category;
 import com.starshop.pojo.entity.Product;
+import com.starshop.pojo.entity.ProductSpec;
 import com.starshop.pojo.entity.SysUser;
+import com.starshop.pojo.vo.ProductSpecVO;
 import com.starshop.pojo.vo.SimpleProductVO;
 import org.mapstruct.*;
 
@@ -41,4 +43,6 @@ public interface CopyMapper {
 
     @Mapping(source = "id" , target = "id")
     SimpleProductVO productToSimpleProductVO(Product product);
+
+    ProductSpecVO productSpecToProductSpecVO(ProductSpec productSpec);
 }

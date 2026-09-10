@@ -1,6 +1,7 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
@@ -18,10 +19,12 @@ import com.starshop.infrastructure.rocketmq.constant.failed.MqFailedMessageConst
 import com.starshop.infrastructure.rocketmq.constant.product.MqProductConstant;
 import com.starshop.mapper.ProductMapper;
 import com.starshop.pojo.entity.MqConsumerFailedMsg;
+import com.starshop.pojo.entity.ProductSpec;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductCollection;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
+import com.starshop.pojo.vo.ProductSpecVO;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.properties.RedisCacheTtlProperties;
@@ -100,6 +103,49 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             productDocumentResultList.add(productDocument);
         }
         return productDocumentResultList.stream().limit(limit).toList();
+    }
+
+    /**
+     * 根据商品id和规格id查询商品规格价格
+     * @param productId 商品id
+     * @param specId 规格id
+     * @return
+     */
+    @Override
+    public Result<?> getProductSpecPrice(String productId, String specId) {
+        //布隆过滤器防止缓存穿透
+        if (!bloomFilterUtils.contains(Long.valueOf(productId))) {
+            return null;
+        }
+        //redis查询数据
+        String key = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.DETAIL + productId;
+        List<ProductSpec> productSpecList = RedisConnector.getHashField(key, Product.Fields.specList, new TypeReference<>(){});
+        //如果查询不到，进行数据库查询
+        if (Objects.isNull(productSpecList)) {
+            String userId = DataConstant.NEGATIVE_ONE_STRING;
+            Product product = productMapper.selectByProductId(productId,userId);
+            //写入缓存
+            RedisConnector.setHashObject(key,product);
+            productSpecList = product.getSpecList();
+        }
+
+        if (productSpecList.isEmpty()) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+
+        //初始化返回结果
+        ProductSpec resultProductSpec = null;
+        for (ProductSpec productSpec : productSpecList) {
+            if (StringUtils.equals(productSpec.getId().toString(),specId)){
+                resultProductSpec = productSpec;
+            }
+        }
+        if (Objects.isNull(resultProductSpec)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+
+        ProductSpecVO productSpecVO = copyMapper.productSpecToProductSpecVO(resultProductSpec);
+        return Result.success(productSpecVO);
     }
 
     /**

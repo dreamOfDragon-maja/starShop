@@ -59,4 +59,13 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     List<ProductDocument> getProductRelated(String productName, Integer limit);
+
+
+    /**
+     * 查询商品规格价格
+     * @param productId 商品id
+     * @param specId 规格id
+     * @return
+     */
+    Result<?> getProductSpecPrice(String productId, String specId);
 }

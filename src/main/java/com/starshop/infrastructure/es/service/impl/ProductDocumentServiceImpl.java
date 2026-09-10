@@ -8,6 +8,7 @@ import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
 import com.starshop.pojo.vo.SimpleProductVO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -75,6 +76,21 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
         }
         //游标查询
         return productEsRepository.searchCursorByProductSortTypeAndProductName(productSortTypeEnum, keyword, limit, sortValue, productId);
+
+    }
+
+    /**
+     * 根据商品名关键词查询
+     * @param productNameKeyword 商品名关键词
+     * @param limit 查询数量
+     * @return 商品文档列表
+     */
+    @Override
+    public List<ProductDocument> getProductDocumentByProductNameKeyword(String productNameKeyword, Integer limit) {
+        if (StringUtils.isBlank(productNameKeyword) || Objects.isNull(limit)) {
+            return Collections.emptyList();
+        }
+        return productEsRepository.searchByName(productNameKeyword,limit);
 
     }
 

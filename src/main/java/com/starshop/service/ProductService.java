@@ -51,4 +51,12 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     CursorCommonResult searchProductList(@Valid CursorCommonEntity cursorCommonEntity, String keyword);
+
+    /**
+     * 获取相关商品
+     * @param productName 商品名
+     * @param limit 查询数量
+     * @return
+     */
+    List<ProductDocument> getProductRelated(String productName, Integer limit);
 }

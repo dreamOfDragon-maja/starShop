@@ -43,4 +43,13 @@ public interface ProductDocumentService {
      * @return 商品文档列表
      */
     List<ProductDocument> getProductDocumentByIdList(List<Long> idList);
+
+
+    /**
+     * 根据商品名关键词查询
+     * @param productNameKeyword 商品名关键词
+     * @param limit 查询数量
+     * @return 商品文档列表
+     */
+    List<ProductDocument> getProductDocumentByProductNameKeyword(String productNameKeyword,Integer limit);
 }

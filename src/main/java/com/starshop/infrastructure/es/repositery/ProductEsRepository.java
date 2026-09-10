@@ -84,4 +84,12 @@ public interface ProductEsRepository {
      * @return 商品文档列表
      */
     List<ProductDocument> getByIdList(List<Long> idList);
+
+    /**
+     * 根据商品文档名进行查询
+     * @param name 商品文档名
+     * @param limit 查询数量
+     * @return 查询商品文档列表
+     */
+    List<ProductDocument> searchByName(String name, Integer limit);
 }

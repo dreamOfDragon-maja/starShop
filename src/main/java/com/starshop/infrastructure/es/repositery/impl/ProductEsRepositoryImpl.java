@@ -35,6 +35,46 @@ public class ProductEsRepositoryImpl implements ProductEsRepository {
     private static final String PRODUCT_INDEX = EsIndexEnum.PRODUCT.getIndexName();
 
     /**
+     * 根据商品文档名进行查询
+     * @param name 商品文档名
+     * @param limit 查询数量
+     * @return 查询商品文档列表
+     */
+    @Override
+    public List<ProductDocument> searchByName(String name, Integer limit) {
+        if (StringUtils.isBlank(name)) {
+            return List.of();
+        }
+        if (limit == null || limit <= 0) {
+            throw new RuntimeException("es 根据名称搜索商品 , limit参数不合法: " + limit);
+        }
+        try {
+            //匹配name以及过滤掉禁用状态的
+            SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s
+                            .index(PRODUCT_INDEX)
+                            .size(limit)
+                            .query(q -> q.bool(b -> b
+                                            .must(m -> m
+                                                    .match(ma -> ma.field(ProductDocument.Fields.name)
+                                                            .query(name)))
+                                            .filter(f -> f.term(
+                                                    t -> t.field(ProductDocument.Fields.status)
+                                                            .value(CommonStatus.ACTIVE.getNumber())
+                                            ))
+                                    )
+                            ),
+                    ProductDocument.class
+            );
+            return searchResponse.hits().hits().stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("ES 按名称搜索商品失败", e);
+        }
+
+    }
+
+    /**
      * 根据 id 列表获取商品文档列表
      * @param idList 商品 id 列表
      * @return 商品文档列表

@@ -103,6 +103,26 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
+     * 基于商品名字, 进行es查询
+     * @param productName 商品名字
+     * @param limit 查询数
+     * @return 返回商品文档列表
+     */
+    @Override
+    public List<ProductDocument> getProductRelated(String productName, Integer limit) {
+        //es查询
+        List<ProductDocument> allMatchProductDocument = productDocumentService.getProductDocumentByProductNameKeyword(productName,limit +1);
+        //遍历去除同名商品
+        for (ProductDocument productDocument : allMatchProductDocument) {
+            if(productDocument.getName().equals(productName)){
+                allMatchProductDocument.remove(productDocument);
+                break;
+            }
+        }
+        return allMatchProductDocument;
+    }
+
+    /**
      * 关键词游标分类搜索商品
      * @param cursorCommonEntity
      * @param keyword

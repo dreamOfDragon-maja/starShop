@@ -14,7 +14,7 @@ import java.util.Map;
 public  class CaffeineUtils {
 
     @Resource
-    private Cache<String, List<String>> hotProductSearchKeywordCache;
+    private LoadingCache<String, List<String>> hotProductSearchKeywordCache;
 
     @Resource
     private Cache<String, List<Category>> categoryTreeCache;
@@ -24,7 +24,7 @@ public  class CaffeineUtils {
      * 查询热门搜索关键词
      */
     public  List<String> getHotProductSearchKeyword() {
-        return hotProductSearchKeywordCache.getIfPresent(CaffeineConstant.CACHE_KEY_HOT_PRODUCT_SEARCH_KEYWORD);
+        return hotProductSearchKeywordCache.get(CaffeineConstant.CACHE_KEY_HOT_PRODUCT_SEARCH_KEYWORD);
     }
 
     /**

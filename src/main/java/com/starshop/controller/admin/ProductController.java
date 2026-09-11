@@ -8,6 +8,7 @@ import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
+import com.starshop.service.ProductSearchKeywordService;
 import com.starshop.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class ProductController {
     private final ProductService productService;
 
     private final EsCopyMapper esCopyMapper;
+
+    private final ProductSearchKeywordService productSearchKeywordService;
 
 
     /**
@@ -121,4 +124,14 @@ public class ProductController {
         SimpleCursorCommonResult simpleProductByScrollQuery = productService.getSimpleProductByScrollQuery(beginId,querySize);
         return Result.success(simpleProductByScrollQuery);
     }
+
+    /**
+     * 用户获取热门搜索关键词列表
+     * @return
+     */
+    @GetMapping("/product/user/keyword/list")
+    public Result<?> getProductSearchKeywordListUser() {
+        return productSearchKeywordService.getProductSearchKeywordListUser();
+    }
+
 }

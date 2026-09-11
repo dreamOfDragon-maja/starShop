@@ -50,6 +50,10 @@ public class CaffeineConfig {
                 );
     }
 
+    /**
+     * 用户获取热门商品搜索关键词
+     * @return
+     */
     private List<String> getHotProductSearchKeywordListUser() {
         LambdaQueryWrapper<ProductSearchKeyword> productSearchKeywordLambdaQueryWrapper = new LambdaQueryWrapper<>();
         productSearchKeywordLambdaQueryWrapper

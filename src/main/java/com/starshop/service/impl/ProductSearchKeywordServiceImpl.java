@@ -1,5 +1,6 @@
 package com.starshop.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.utils.CaffeineUtils;
 import com.starshop.mapper.ProductSearchKeywordMapper;
@@ -10,6 +11,7 @@ import com.starshop.service.ProductSearchKeywordService;
 import jakarta.annotation.Resource;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,5 +47,19 @@ public class ProductSearchKeywordServiceImpl extends ServiceImpl<ProductSearchKe
         //查询5条数据
         List<String> resultList = hotProductSearchKeyword.stream().limit(5).toList();
         return Result.success(resultList);
+    }
+
+    /**
+     * 管理员修改搜索关键词
+     * @param productSearchKeywordList
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> updateProductSearchListAdmin(List<ProductSearchKeyword> productSearchKeywordList) {
+        remove(new LambdaQueryWrapper<>());
+        saveBatch(productSearchKeywordList);
+        caffeineUtils.invalidateHotProductSearchKeywordCache();
+        return Result.success();
     }
 }

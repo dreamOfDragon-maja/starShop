@@ -6,6 +6,7 @@ import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.pojo.entity.Product;
+import com.starshop.pojo.entity.ProductSearchKeyword;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
 import com.starshop.service.ProductSearchKeywordService;
@@ -143,4 +144,13 @@ public class ProductController {
         return productSearchKeywordService.getProductSearchKeywordListAdmin();
     }
 
+    /**
+     * 管理员修改搜索关键词
+     * @param productSearchKeywordList
+     * @return
+     */
+    @PutMapping("/product/admin/keyword/update")
+    public Result<?> updateProductSearchListAdmin(@RequestBody List<ProductSearchKeyword> productSearchKeywordList){
+        return productSearchKeywordService.updateProductSearchListAdmin(productSearchKeywordList);
+    }
 }

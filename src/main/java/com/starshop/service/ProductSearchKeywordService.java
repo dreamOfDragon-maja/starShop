@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.entity.ProductSearchKeyword;
 import com.starshop.result.Result;
 
+import java.util.List;
+
 public interface ProductSearchKeywordService extends IService<ProductSearchKeyword> {
     /**
      * 用户获取热门搜索关键词列表
@@ -17,4 +19,10 @@ public interface ProductSearchKeywordService extends IService<ProductSearchKeywo
      */
     Result<?> getProductSearchKeywordListAdmin();
 
+    /**
+     * 管理员修改搜索关键词
+     * @param productSearchKeywordList
+     * @return
+     */
+    Result<?> updateProductSearchListAdmin(List<ProductSearchKeyword> productSearchKeywordList);
 }

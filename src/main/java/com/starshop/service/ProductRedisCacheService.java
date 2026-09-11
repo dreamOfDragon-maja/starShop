@@ -21,4 +21,16 @@ public interface ProductRedisCacheService {
      * 刷新热门商品缓存（从 DB 按销量 Top N 写入 Redis 双缓存）
      */
     void refreshHotProductCache();
+
+
+    /**
+     * 获取es最大商品id
+     * @return 最大商品id
+     */
+    Long getMaxProductId();
+
+    /**
+     * 初始化最大商品id es -> redis
+     */
+    void initMaxProductId();
 }

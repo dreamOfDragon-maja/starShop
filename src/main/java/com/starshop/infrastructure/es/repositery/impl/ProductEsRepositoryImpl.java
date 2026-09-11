@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,6 +34,62 @@ public class ProductEsRepositoryImpl implements ProductEsRepository {
 
     private final ElasticsearchClient esClient;
     private static final String PRODUCT_INDEX = EsIndexEnum.PRODUCT.getIndexName();
+
+    /**
+     * 查询指定id后的指定数量的商品文档
+     * @param limit
+     * @param productId
+     * @return
+     */
+    @Override
+    public List<ProductDocument> searchLimitAfterId(Integer limit, Long productId) {
+        try {
+            SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s
+                            .index(PRODUCT_INDEX)
+                            .size(limit)
+                            .query(q -> q.bool(b -> b.must(m -> m.range(r -> r.number(n -> n
+                                            .field(ProductDocument.Fields.id).gt(Double.valueOf(productId)))))
+                                    .must(m -> m.term(t -> t.field(ProductDocument.Fields.status).value(CommonStatus.ACTIVE.getNumber())))))
+                            .sort(sort -> sort.field(f -> f.field(ProductDocument.Fields.id).order(SortOrder.Asc)))
+                    , ProductDocument.class);
+
+            return searchResponse.hits().hits().stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            throw new RuntimeException("ES商品查询异常", e);
+        }
+
+    }
+
+    /**
+     * 获取最大商品文档 id
+     * @return 最大商品文档 id
+     */
+    @Override
+    public Long getMaxId() {
+        try {
+            SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s
+                            .index(PRODUCT_INDEX)
+                            .query(q -> q.matchAll(m -> m))
+                            .sort(sort -> sort.field(f -> f.field(ProductDocument.Fields.id).order(SortOrder.Desc)))
+                            .size(1)
+                            .source(src -> src.filter(f -> f.includes(ProductDocument.Fields.id)))
+                    , ProductDocument.class);
+            if (searchResponse.hits().total() != null && searchResponse.hits().total().value() == 0) {
+                throw new RuntimeException("es 商品数据数量为 0 ,未初始化数据...");
+            }
+            ProductDocument maxIdProductDocument = searchResponse.hits().hits().get(0).source();
+            if (Objects.isNull(maxIdProductDocument)){
+                throw new RuntimeException("es 最大id 商品文档数据异常 ");
+            }
+            return maxIdProductDocument.getId();
+        } catch (IOException e) {
+            throw new RuntimeException("查询ES最大ID失败", e);
+        }
+
+    }
 
     /**
      * 根据商品文档名进行查询

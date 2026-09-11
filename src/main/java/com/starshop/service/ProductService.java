@@ -3,6 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
+import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.vo.SimpleProductVO;
@@ -68,4 +69,12 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     Result<?> getProductSpecPrice(String productId, String specId);
+
+    /**
+     * 滚动查询商品列表
+     * @param beginId
+     * @param querySize
+     * @return
+     */
+    SimpleCursorCommonResult getSimpleProductByScrollQuery(Long beginId, Integer querySize);
 }

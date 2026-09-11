@@ -2,6 +2,7 @@ package com.starshop.controller.admin;
 
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
+import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.pojo.entity.Product;
@@ -106,5 +107,18 @@ public class ProductController {
     @GetMapping("/product/spec/price")
     public Result<?> getProductSpecPrice(@RequestParam String productId,@RequestParam String specId){
         return productService.getProductSpecPrice(productId,specId);
+    }
+
+
+    /**
+     * 滚动查询商品列表
+     * @param beginId
+     * @param querySize
+     * @return
+     */
+    @GetMapping("/product/scroll/query/list")
+    public Result<SimpleCursorCommonResult> getSimpleProductByScrollQuery(Long beginId,@RequestParam(defaultValue = "80") Integer querySize){
+        SimpleCursorCommonResult simpleProductByScrollQuery = productService.getSimpleProductByScrollQuery(beginId,querySize);
+        return Result.success(simpleProductByScrollQuery);
     }
 }

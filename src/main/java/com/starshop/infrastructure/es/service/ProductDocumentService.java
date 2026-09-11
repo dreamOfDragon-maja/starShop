@@ -52,4 +52,19 @@ public interface ProductDocumentService {
      * @return 商品文档列表
      */
     List<ProductDocument> getProductDocumentByProductNameKeyword(String productNameKeyword,Integer limit);
+
+    /**
+     * 获取最大商品文档 id
+     * @return 最大商品文档 id
+     */
+    Long getMaxProductDocumentId();
+
+
+    /**
+     * 查询指定商品id之后的指定数量的商品文档
+     * @param limit 查询数量
+     * @param productId 商品 id
+     * @return  商品文档列表
+     */
+    List<ProductDocument> searchLimitAfterProductId(Integer limit, Long productId);
 }

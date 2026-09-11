@@ -92,4 +92,19 @@ public interface ProductEsRepository {
      * @return 查询商品文档列表
      */
     List<ProductDocument> searchByName(String name, Integer limit);
+
+    /**
+     * 获取最大商品文档 id
+     * @return 最大商品文档 id
+     */
+    Long getMaxId();
+
+
+    /**
+     * 查询指定id后的指定数量的商品文档
+     * @param limit
+     * @param productId
+     * @return
+     */
+    List<ProductDocument> searchLimitAfterId(Integer limit, Long productId);
 }

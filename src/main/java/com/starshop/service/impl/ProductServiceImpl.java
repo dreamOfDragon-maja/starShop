@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
+import com.starshop.common.result.SimpleCursorCommonEntity;
+import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.common.utils.BloomFilterUtils;
 import com.starshop.common.utils.JacksonUtils;
 import com.starshop.constant.DataConstant;
@@ -42,6 +44,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -103,6 +106,52 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             productDocumentResultList.add(productDocument);
         }
         return productDocumentResultList.stream().limit(limit).toList();
+    }
+
+    /**
+     * 滚动查询商品列表
+     * @param beginId
+     * @param querySize
+     * @return
+     */
+    @Override
+    public SimpleCursorCommonResult getSimpleProductByScrollQuery(Long beginId, Integer querySize) {
+        //判断beginId是否为null，是的话给定一个随机开始查询id
+        if (Objects.isNull(beginId)) {
+            Long maxProductId = productRedisCacheService.getMaxProductId();
+            //round:将传入值+0.5并向下取整
+            long maxBeginId = Math.round(maxProductId * DataConstant.QUERY_SECURITY_NUMBER);
+            //max:将传入的两个值比较并返回大的值
+            maxBeginId = Math.max(maxBeginId, 2);
+            beginId = ThreadLocalRandom.current().nextLong(1, maxBeginId);
+        }
+        //es查询
+        List<SimpleProductVO> resultList = productDocumentService.searchLimitAfterProductId(querySize, beginId).stream()
+                .map(esCopyMapper::ProductDocumentToSimpleProductVO)
+                .collect(Collectors.toList());
+
+        //如果没有结果返回空集合
+        if (resultList.isEmpty()) {
+            return SimpleCursorCommonResult.builder()
+                    .list(Collections.emptyList())
+                    .isEnd(true)
+                    .build();
+        }
+        //查询末尾id
+        Long endId = resultList.get(resultList.size() - 1).getId();
+        boolean isEnd = resultList.size() < querySize;
+        //打乱结果
+        Collections.shuffle(resultList);
+        SimpleCursorCommonEntity simpleCursorCommonEntity = SimpleCursorCommonEntity.builder()
+                .sortId(endId)
+                .querySize(querySize)
+                .build();
+
+        return SimpleCursorCommonResult.builder()
+                .simpleCursorCommonEntity(simpleCursorCommonEntity)
+                .list(resultList)
+                .isEnd(isEnd)
+                .build();
     }
 
     /**

@@ -8,6 +8,7 @@ import com.starshop.constant.BucketConstant;
 import com.starshop.constant.DataConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.es.document.ProductDocument;
+import com.starshop.infrastructure.es.service.ProductDocumentService;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductMapper;
@@ -15,14 +16,17 @@ import com.starshop.pojo.entity.Product;
 import com.starshop.properties.RedisBucketTtlProperties;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.service.ProductRedisCacheService;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +44,12 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
     private final ProductMapper productMapper;
 
     private final CopyMapper copyMapper;
+
+    private final ProductDocumentService productDocumentService;
+
+    @Resource(name = "executorSchedulerCommon")
+    private ThreadPoolTaskExecutor threadPoolExecutor;
+
 
 
     //TODO 后续抽出来
@@ -114,7 +124,6 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
         }
         return Collections.emptyList();
     }
-
 
     /**
      * 刷新热门商品缓存：DB 按销量 Top N → Redis Hash + ID列表
@@ -226,5 +235,36 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
             }
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * 获取es最大商品id
+     * @return 最大商品id
+     */
+    @Override
+    public Long getMaxProductId() {
+        String maxProductIdKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.MAX_PRODUCT_ID;
+        Object maxProductIdObject = RedisConnector.opsForValue().get(maxProductIdKey);
+
+        //如果查询结果为null
+        if (Objects.isNull(maxProductIdObject)) {
+            //开启线程任务查询es
+            threadPoolExecutor.execute(this::initMaxProductId);
+            //直接查询es返回数据
+            return productDocumentService.getMaxProductDocumentId();
+        }
+
+        return Long.valueOf(maxProductIdObject.toString());
+    }
+
+    /**
+     * 初始化最大商品id es -> redis
+     */
+    @Override
+    public void initMaxProductId() {
+        //查询es
+        Long maxProductDocumentId = productDocumentService.getMaxProductDocumentId();
+        String maxProductIdKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.MAX_PRODUCT_ID;
+        RedisConnector.opsForValue().set(maxProductIdKey,maxProductDocumentId);
     }
 }

@@ -23,6 +23,16 @@ public class ProductSearchKeywordServiceImpl extends ServiceImpl<ProductSearchKe
     private CaffeineUtils caffeineUtils;
 
     /**
+     * 管理员获取搜索关键词列表
+     * @return
+     */
+    @Override
+    public Result<?> getProductSearchKeywordListAdmin() {
+        List<ProductSearchKeyword> resultList = lambdaQuery().list();
+        return Result.success(resultList);
+    }
+
+    /**
      * 用户获取热门搜索关键词列表
      * @return
      */

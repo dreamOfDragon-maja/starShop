@@ -134,4 +134,13 @@ public class ProductController {
         return productSearchKeywordService.getProductSearchKeywordListUser();
     }
 
+    /**
+     * 管理员获取搜索关键词列表
+     * @return
+     */
+    @GetMapping("/product/admin/keyword/list")
+    public Result<?> getProductSearchKeywordListAdmin() {
+        return productSearchKeywordService.getProductSearchKeywordListAdmin();
+    }
+
 }

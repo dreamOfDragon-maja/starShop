@@ -11,4 +11,10 @@ public interface ProductSearchKeywordService extends IService<ProductSearchKeywo
      */
     Result<?> getProductSearchKeywordListUser();
 
+    /**
+     * 管理员获取搜索关键词列表
+     * @return
+     */
+    Result<?> getProductSearchKeywordListAdmin();
+
 }

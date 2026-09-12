@@ -183,4 +183,13 @@ public class ProductController {
                                       @RequestBody @NotNull CursorCommonEntity cursorCommonEntity){
         return productCommentService.getSecondComment(firstCommentId,cursorCommonEntity);
     }
+
+    /**
+     * 查询指定一级评论下的用户追评
+     * @return
+     */
+    @GetMapping("/user/product/comment/appendComment/show")
+    public Result<?> getAppendComment(@RequestParam @NotBlank String firstCommentId) {
+        return productCommentService.getAppendComment(firstCommentId);
+    }
 }

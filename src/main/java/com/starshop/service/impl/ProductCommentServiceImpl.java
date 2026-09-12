@@ -15,12 +15,15 @@ import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
+import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductComment;
+import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
 import com.starshop.pojo.enums.ProductCommentQuerySortTypeEnum;
+import com.starshop.pojo.vo.ProductAppendCommentVO;
 import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
 import com.starshop.service.ProductCommentService;
@@ -47,6 +50,8 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     private final BloomFilterUtils bloomFilterUtils;
 
     private final CopyMapper copyMapper;
+
+    private final ProductCommentAppendMapper productCommentAppendMapper;
     /**
      * 用户做分类查询商品一级评论
      * @param cursorCommonEntity
@@ -164,6 +169,42 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
                 }
         );
         return getCursorCommonResult(cursorCommonEntity, productCommentList, copyMapper::productCommentToProductSecondCommentVO);
+
+    }
+    /**
+     * 查询指定一级评论下的用户追评
+     * @return
+     */
+    @Override
+    public Result<?> getAppendComment(String firstCommentId) {
+        Long aboutFirstCommentId = Long.valueOf(firstCommentId);
+        String appendCommentKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.APPEND_COMMENT + RedisKeyConstant.FIRST_COMMENT + firstCommentId;
+        //查询缓存
+        ProductCommentAppend productCommentAppend = RedisConnector.getHashObject(appendCommentKey, ProductCommentAppend.class);
+        //查询不到查询数据库
+        if (Objects.isNull(productCommentAppend)) {
+            ProductCommentAppend productCommentAppendSelectOne = productCommentAppendMapper.selectOne(new LambdaQueryWrapper<>(ProductCommentAppend.class)
+                    .eq(ProductCommentAppend::getCommentId, aboutFirstCommentId));
+            //如果数据库中也没有数据，缓存空对象防止缓存穿透
+            if (Objects.isNull(productCommentAppendSelectOne)) {
+                //构建空对象
+                ProductCommentAppend emptyProductCommentAppend = ProductCommentAppend.builder().id(DataConstant.ZERO_LONG).build();
+                RedisConnector.setHashObject(appendCommentKey, emptyProductCommentAppend);
+                RedisConnector.expire(appendCommentKey, redisCacheTtlProperties.getProductAppendCommentTtl(), TimeUnit.SECONDS);
+                return Result.error(MessageConstant.DATA_ERROR);
+            }
+            //将查到的数据写入缓存并返回
+            RedisConnector.setHashObject(appendCommentKey, productCommentAppendSelectOne);
+            RedisConnector.expire(appendCommentKey, redisCacheTtlProperties.getProductAppendCommentTtl(), TimeUnit.SECONDS);
+            ProductAppendCommentVO productAppendCommentVO = copyMapper.productCommentAppendToProductCommentAppendVO(productCommentAppendSelectOne);
+            return Result.success(productAppendCommentVO);
+        }
+        //空对象过滤
+        if (productCommentAppend.getId().equals(DataConstant.ZERO_LONG)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        ProductAppendCommentVO productAppendCommentVO = copyMapper.productCommentAppendToProductCommentAppendVO(productCommentAppend);
+        return Result.success(productAppendCommentVO);
 
     }
 

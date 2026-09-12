@@ -33,6 +33,7 @@ public class RedisKeyConstant {
     public static final String COMMENT = "comment:";
     public static final String FIRST_COMMENT="firstComment:";
     public static final String SECOND_COMMENT = "secondComment:";
+    public static final String APPEND_COMMENT="appendComment:";
 
     /**
      * Bucket 读写标记前缀（仅用于 Redisson RBucket 锁标记，不可与业务数据 key 混用）

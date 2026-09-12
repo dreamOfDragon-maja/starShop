@@ -23,4 +23,10 @@ public interface ProductCommentService {
      * @return
      */
     Result<?> getSecondComment(@NotBlank String firstCommentId, @NotNull CursorCommonEntity cursorCommonEntity);
+
+    /**
+     * 查询指定一级评论下的用户追评
+     * @return
+     */
+    Result<?> getAppendComment(@NotBlank String firstCommentId);
 }

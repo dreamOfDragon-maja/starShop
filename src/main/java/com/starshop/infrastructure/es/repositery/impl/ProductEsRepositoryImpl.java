@@ -47,6 +47,7 @@ public class ProductEsRepositoryImpl implements ProductEsRepository {
             SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s
                             .index(PRODUCT_INDEX)
                             .size(limit)
+                            .trackTotalHits(t -> t.enabled(false))
                             .query(q -> q.bool(b -> b.must(m -> m.range(r -> r.number(n -> n
                                             .field(ProductDocument.Fields.id).gt(Double.valueOf(productId)))))
                                     .must(m -> m.term(t -> t.field(ProductDocument.Fields.status).value(CommonStatus.ACTIVE.getNumber())))))

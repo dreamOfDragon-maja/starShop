@@ -1,23 +1,39 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.common.result.CursorCommonEntity;
+import com.starshop.common.result.CursorCommonResult;
+import com.starshop.common.utils.BloomFilterUtils;
 import com.starshop.constant.DataConstant;
+import com.starshop.constant.DatePatternConstants;
+import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
+import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentLike;
+import com.starshop.pojo.enums.ProductCommentQuerySortTypeEnum;
 import com.starshop.properties.RedisCacheTtlProperties;
+import com.starshop.result.Result;
 import com.starshop.service.ProductCommentService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +43,97 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     private final ProductCommentLikeMapper productCommentLikeMapper;
 
     private final RedisCacheTtlProperties redisCacheTtlProperties;
+
+    private final BloomFilterUtils bloomFilterUtils;
+
+    private final CopyMapper copyMapper;
+    /**
+     * 用户做分类查询商品一级评论
+     * @param cursorCommonEntity
+     * @param productId
+     * @return
+     */
+    @Override
+    public Result<?> getProductCommentBySortType(CursorCommonEntity cursorCommonEntity, String productId) {
+        //布隆过滤
+        if (!bloomFilterUtils.contains(Long.valueOf(productId))) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //获取传递数据
+        String sortType = cursorCommonEntity.getSortType();
+        String endCommentCreateTimeText = cursorCommonEntity.getSortValue();
+        Long sortId = cursorCommonEntity.getSortId();
+        Integer querySize = cursorCommonEntity.getQuerySize();
+        LocalDateTime endCommentCreateTime;
+        //解析sortValue(时间戳)
+        if (StringUtils.isNotBlank(endCommentCreateTimeText)) {
+            try {
+                endCommentCreateTime = LocalDateTime.parse(endCommentCreateTimeText, DatePatternConstants.NORMAL_DATETIME_FORMATTER);
+            } catch (DateTimeParseException e) {
+                log.error(MessageConstant.DATE_TIME_PARSE_ERROR);
+                return Result.error(MessageConstant.DATE_TIME_PARSE_ERROR);
+            }
+        }else {
+            endCommentCreateTime = LocalDateTime.now();
+        }
+        //将sortType转成枚举
+        ProductCommentQuerySortTypeEnum productCommentQuerySortTypeEnum = ProductCommentQuerySortTypeEnum.getByValue(sortType);
+        SFunction<ProductComment, Object> function = productCommentQuerySortTypeEnum.getFunction();
+        Object parameter = productCommentQuerySortTypeEnum.getParameter();
+
+        //构造查询条件
+        LambdaQueryChainWrapper<ProductComment> productCommentLambdaQueryChainWrapper = lambdaQuery();
+        if (!Objects.isNull(function)) {
+            //排序类型不是默认
+            productCommentLambdaQueryChainWrapper = productCommentLambdaQueryChainWrapper.eq(function,parameter);
+        }
+        LocalDateTime finalEndCommentCreateTime = endCommentCreateTime;
+
+        //开始分页(先按创建时间倒序，同时间按主键 ID 倒序)
+        Page<ProductComment> pageResult = productCommentLambdaQueryChainWrapper
+                .eq(ProductComment::getProductId, productId)
+                .eq(ProductComment::getParentId, DataConstant.ZERO_INT)
+                .and(wrapper -> wrapper
+                        .lt(ProductComment::getCreateTime, finalEndCommentCreateTime)
+                        .or(wrapper2 -> wrapper2
+                                .eq(ProductComment::getCreateTime, finalEndCommentCreateTime)
+                                .lt(ProductComment::getId, sortId)))
+                .orderByDesc(ProductComment::getCreateTime)
+                .orderByDesc(ProductComment::getId)
+                .page(new Page<>(DataConstant.ONE_INT, querySize));
+        List<ProductComment> productCommentList = pageResult.getRecords();
+        //为评论设置点赞
+        setProductCommentIsLike(productCommentList).forEach(productComment -> {
+            //在redis中查询总点赞数
+            Long firstCommentId = productComment.getId();
+            String key =RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.FIRST_COMMENT + firstCommentId;
+            if (RedisConnector.hasKey(key)) {
+                Integer likeCount = RedisConnector.getHashField(key, ProductComment.Fields.likeCount, Integer.class);
+                productComment.setLikeCount(likeCount);
+            }
+        });
+        return getCursorCommonResult(cursorCommonEntity, productCommentList, copyMapper::productCommentToProductFirstCommentVO);
+    }
+
+    /**
+     * 统一业务封装方法
+     * @param cursorCommonEntity
+     * @param productCommentList
+     * @param copyMapperFunction
+     * @return
+     * @param <T>
+     */
+    private <T> Result<CursorCommonResult> getCursorCommonResult(CursorCommonEntity cursorCommonEntity, List<ProductComment> productCommentList, Function<ProductComment,T> copyMapperFunction) {
+        if (productCommentList.isEmpty()) {
+            return Result.success(CursorCommonResult.builder().isEnd(true).build());
+        }
+        List<T> resultList = productCommentList.stream().map(copyMapperFunction).toList();
+        ProductComment productComment = productCommentList.get(productCommentList.size() - 1);
+        //设置下一次滚动查询的参数
+        cursorCommonEntity.setSortId(productComment.getId()).setSortValue(productComment.getCreateTime().format(DatePatternConstants.NORMAL_DATETIME_FORMATTER));
+        CursorCommonResult cursorCommonResult = CursorCommonResult.builder().cursorCommonEntity(cursorCommonEntity).list(resultList).build();
+        return Result.success(cursorCommonResult);
+    }
 
     /**
      * 为评论设置 like , 更新评论下的用户set缓存

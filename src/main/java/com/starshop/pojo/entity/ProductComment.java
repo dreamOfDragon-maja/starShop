@@ -52,7 +52,13 @@ public class ProductComment {
     /**
      * 订单ID，关联订单表
      */
-    @TableField("order_no")
+    @TableField("order_id")
+    private Long orderId;
+
+    /**
+     * 订单号
+     */
+    @TableField(exist = false)
     private String orderNo;
 
 

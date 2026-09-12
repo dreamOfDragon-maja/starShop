@@ -31,6 +31,7 @@ public class RedisKeyConstant {
     public static final String COLLECTION = "collection:";
     public static final String MAX_PRODUCT_ID = "maxProductId";
     public static final String COMMENT = "comment:";
+    public static final String FIRST_COMMENT="firstComment:";
 
     /**
      * Bucket 读写标记前缀（仅用于 Redisson RBucket 锁标记，不可与业务数据 key 混用）

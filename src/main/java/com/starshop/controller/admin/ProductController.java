@@ -9,9 +9,11 @@ import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductSearchKeyword;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.result.Result;
+import com.starshop.service.ProductCommentService;
 import com.starshop.service.ProductSearchKeywordService;
 import com.starshop.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,8 @@ public class ProductController {
     private final EsCopyMapper esCopyMapper;
 
     private final ProductSearchKeywordService productSearchKeywordService;
+
+    private final ProductCommentService productCommentService;
 
 
     /**
@@ -152,5 +156,18 @@ public class ProductController {
     @PutMapping("/product/admin/keyword/update")
     public Result<?> updateProductSearchListAdmin(@RequestBody List<ProductSearchKeyword> productSearchKeywordList){
         return productSearchKeywordService.updateProductSearchListAdmin(productSearchKeywordList);
+    }
+
+    /**
+     * 用户做分类查询商品一级评论
+     * @param cursorCommonEntity
+     * @param productId
+     * @return
+     */
+    @PostMapping("/user/product/comment/firstComment/show")
+    public Result<?> getProductCommentBySortType(@RequestBody @Valid CursorCommonEntity cursorCommonEntity,
+                                                 @RequestParam @NotBlank String productId
+                                                 ){
+        return productCommentService.getProductCommentBySortType(cursorCommonEntity,productId);
     }
 }

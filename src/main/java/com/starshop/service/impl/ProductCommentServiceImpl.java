@@ -116,6 +116,58 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     }
 
     /**
+     * 查询指定一级评论下二级评论
+     * @param firstCommentId
+     * @param cursorCommonEntity
+     * @return
+     */
+    @Override
+    public Result<?> getSecondComment(String firstCommentId, CursorCommonEntity cursorCommonEntity) {
+        //获取传递数据
+        String endCommentCreateTimeText = cursorCommonEntity.getSortValue();
+        Long endCommentId = cursorCommonEntity.getSortId();
+        Integer querySize = cursorCommonEntity.getQuerySize();
+        LocalDateTime endCommentCreateTime;
+        //解析sortValue(时间戳)
+        if (StringUtils.isNotBlank(endCommentCreateTimeText)) {
+            try {
+                endCommentCreateTime = LocalDateTime.parse(endCommentCreateTimeText, DatePatternConstants.NORMAL_DATETIME_FORMATTER);
+            } catch (DateTimeParseException e) {
+                log.error(MessageConstant.DATE_TIME_PARSE_ERROR);
+                return Result.error(MessageConstant.DATE_TIME_PARSE_ERROR);
+            }
+        }else {
+            endCommentCreateTime = LocalDateTime.now();
+        }
+        //开始分页(先按创建时间倒序，同时间按主键 ID 倒序)
+        Page<ProductComment> pageResult = lambdaQuery().eq(ProductComment::getParentId, firstCommentId)
+                .and(wrapper ->
+                        wrapper.lt(ProductComment::getCreateTime, endCommentCreateTime)
+                                .or(wrapper2 -> {
+                                    wrapper2.eq(ProductComment::getCreateTime, endCommentCreateTime)
+                                            .lt(ProductComment::getId, endCommentId);
+                                })
+                )
+                .orderByDesc(ProductComment::getCreateTime)
+                .orderByDesc(ProductComment::getId)
+                .page(new Page<>(DataConstant.ONE_INT, querySize));
+        List<ProductComment> productCommentList = pageResult.getRecords();
+        //为评论设置点赞
+        setProductCommentIsLike(productCommentList).forEach(productComment -> {
+            //在redis中查询总点赞数
+            Long secondCommentId = productComment.getId();
+            String key = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.SECOND_COMMENT + secondCommentId;
+                    if (RedisConnector.hasKey(key)) {
+                        Integer likeCount = RedisConnector.getHashField(key, ProductComment.Fields.likeCount, Integer.class);
+                        productComment.setLikeCount(likeCount);
+                    }
+                }
+        );
+        return getCursorCommonResult(cursorCommonEntity, productCommentList, copyMapper::productCommentToProductSecondCommentVO);
+
+    }
+
+    /**
      * 统一业务封装方法
      * @param cursorCommonEntity
      * @param productCommentList

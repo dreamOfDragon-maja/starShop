@@ -14,6 +14,7 @@ import com.starshop.service.ProductSearchKeywordService;
 import com.starshop.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -169,5 +170,17 @@ public class ProductController {
                                                  @RequestParam @NotBlank String productId
                                                  ){
         return productCommentService.getProductCommentBySortType(cursorCommonEntity,productId);
+    }
+
+    /**
+     * 查询指定一级评论下二级评论
+     * @param firstCommentId
+     * @param cursorCommonEntity
+     * @return
+     */
+    @PostMapping("/user/product/comment/secondComment/show")
+    public Result<?> getSecondComment(@RequestParam @NotBlank String firstCommentId,
+                                      @RequestBody @NotNull CursorCommonEntity cursorCommonEntity){
+        return productCommentService.getSecondComment(firstCommentId,cursorCommonEntity);
     }
 }

@@ -2,6 +2,7 @@ package com.starshop.service;
 
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
+import com.starshop.pojo.dto.SecondProductCommentDTO;
 import com.starshop.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -38,4 +39,10 @@ public interface ProductCommentService {
      */
     Result<?> saveProductFirstComment(@Valid FirstProductCommentDTO firstProductCommentDTO);
 
+    /**
+     * 用户发表二级以上商品评论
+     * @param secondProductCommentDTO
+     * @return
+     */
+    Result<?> saveProductSecondComment(@Valid SecondProductCommentDTO secondProductCommentDTO);
 }

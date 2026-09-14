@@ -6,6 +6,7 @@ import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.mapstruct.EsCopyMapper;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
+import com.starshop.pojo.dto.SecondProductCommentDTO;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductSearchKeyword;
 import com.starshop.pojo.vo.SimpleProductVO;
@@ -202,5 +203,16 @@ public class ProductController {
     @PostMapping("user/product/comment/firstComment/save")
     public Result<?> saveProductFirstComment(@RequestBody @Valid FirstProductCommentDTO firstProductCommentDTO){
         return productCommentService.saveProductFirstComment(firstProductCommentDTO);
+    }
+
+
+    /**
+     * 用户发表二级以上商品评论
+     * @param secondProductCommentDTO
+     * @return
+     */
+    @PostMapping("user/product/comment/secondComment/save")
+    public Result<?> saveProductSecondComment(@RequestBody @Valid SecondProductCommentDTO secondProductCommentDTO){
+        return productCommentService.saveProductSecondComment(secondProductCommentDTO);
     }
 }

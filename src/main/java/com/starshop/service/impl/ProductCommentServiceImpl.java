@@ -14,12 +14,14 @@ import com.starshop.constant.DatePatternConstants;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
+import com.starshop.exception.EmptyObjectException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
+import com.starshop.pojo.dto.SecondProductCommentDTO;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
@@ -240,6 +242,84 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         String key = RedisKeyConstant.PREFIX_PRODUCT + productId + ":" + RedisKeyConstant.COMMENT_COUNT;
         StringRedisConnector.delete(key);
         return Result.success();
+    }
+
+    /**
+     * 用户发表二级以上商品评论
+     * @param secondProductCommentDTO
+     * @return
+     */
+    @Override
+    public Result<?> saveProductSecondComment(SecondProductCommentDTO secondProductCommentDTO) {
+        if (Objects.isNull(secondProductCommentDTO)) {
+            return Result.error(MessageConstant.NETWORK_ERROR);
+        }
+        //获取当前登录用户id
+        String userId = BaseContext.getUserId();
+        ProductComment productComment = copyMapper.secondProductCommentDTOToProductComment(secondProductCommentDTO);
+        Long parentCommentId = productComment.getParentId();
+        if (Objects.isNull(parentCommentId)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //在redis查询一级评论数据
+        String firstCommentKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.FIRST_COMMENT + parentCommentId;
+        ProductComment firstProductComment = RedisConnector.getHashObject(firstCommentKey, ProductComment.class);
+        //防止缓存穿透
+        firstProductComment = getProductCommentIfRedisCacheNull(firstProductComment, parentCommentId, firstCommentKey);
+        //过滤空对象
+        if (firstProductComment.getId().equals(DataConstant.ZERO_LONG)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        Long firstProductCommentUserId = firstProductComment.getUserId();
+        //确定是买家,进行标记
+        if (firstProductCommentUserId.equals(Long.valueOf(userId))) {
+            productComment.setIsBuyer(DataConstant.ONE_INT);
+        }
+        //判断是否匿名发送
+        testIsAnonymous(productComment)
+                .setUserId(Long.valueOf(userId))
+                .setCreateTime(LocalDateTime.now()).
+                setUpdatedTime(LocalDateTime.now());
+        boolean isSuccess = save(productComment);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.TOM_CAT_ERROR);
+        }
+        //删除redis中缓存的评论点赞数
+        String productId = secondProductCommentDTO.getProductId();
+        String key = RedisKeyConstant.PREFIX_PRODUCT + productId + ":" + RedisKeyConstant.COMMENT_COUNT;
+        StringRedisConnector.delete(key);
+        return Result.success();
+
+    }
+
+    /**
+     * 传入 redis 查询后的一级评论结果
+     * 进行判断是否为 null ,是会进行数据库查询,如果为空会缓存空对象
+     * 不是 null ,放行,不做处理
+     * @param firstProductComment
+     * @param parentCommentId
+     * @param firstCommentKey
+     * @return
+     */
+    private ProductComment getProductCommentIfRedisCacheNull(ProductComment firstProductComment, Long parentCommentId, String firstCommentKey) {
+        if (Objects.isNull(firstProductComment)) {
+            //查询数据库
+            firstProductComment = lambdaQuery().eq(ProductComment::getId, parentCommentId).one();
+            //缓存空对象
+            if (Objects.isNull(firstProductComment)) {
+                ProductComment emptyProductComment = ProductComment
+                        .builder()
+                        .id(DataConstant.ZERO_LONG)
+                        .build();
+                RedisConnector.setHashObject(firstCommentKey,emptyProductComment);
+                throw new EmptyObjectException(MessageConstant.DATA_ERROR);
+            }
+            //将查询到的数据写入redis
+            RedisConnector.setHashObject(firstCommentKey, firstProductComment);
+            RedisConnector.expire(firstCommentKey, redisCacheTtlProperties.getProductFirstCommentTtl(), TimeUnit.SECONDS);
+        }
+
+        return firstProductComment;
     }
 
     /**

@@ -15,10 +15,11 @@ import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
+import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
-import com.starshop.pojo.entity.Product;
+import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
@@ -206,6 +207,52 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         ProductAppendCommentVO productAppendCommentVO = copyMapper.productCommentAppendToProductCommentAppendVO(productCommentAppend);
         return Result.success(productAppendCommentVO);
 
+    }
+
+    /**
+     * 用户发表一级商品评论
+     * @param firstProductCommentDTO
+     * @return
+     */
+    @Override
+    public Result<?> saveProductFirstComment(FirstProductCommentDTO firstProductCommentDTO) {
+        if (Objects.isNull(firstProductCommentDTO)) {
+            return Result.error(MessageConstant.NETWORK_ERROR);
+        }
+        //获取当前登录用户id
+        String userId = BaseContext.getUserId();
+        ProductComment productComment = copyMapper.firstProductCommentDTOToProductComment(firstProductCommentDTO);
+        testIsAnonymous(productComment)
+                .setParentId(DataConstant.ZERO_LONG)
+                .setUserId(Long.valueOf(userId))
+                .setIsBuyer(DataConstant.ONE_INT)
+                .setCreateTime(LocalDateTime.now())
+                .setUpdatedTime(LocalDateTime.now());
+        //存入数据库
+        boolean isSuccess = save(productComment);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.TOM_CAT_ERROR);
+        }
+        //TODO后续使用rocketmq修改订单状态为已评价
+
+        //删除redis中缓存的评论点赞数
+        String productId = firstProductCommentDTO.getProductId();
+        String key = RedisKeyConstant.PREFIX_PRODUCT + productId + ":" + RedisKeyConstant.COMMENT_COUNT;
+        StringRedisConnector.delete(key);
+        return Result.success();
+    }
+
+    /**
+     * 判断是否为匿名发布
+     * @param productComment
+     */
+    private ProductComment testIsAnonymous(ProductComment productComment) {
+        int isAnonymous = productComment.getIsAnonymous();
+        if (isAnonymous == DataConstant.ONE_INT) {
+            productComment.setUserNickname(DataConstant.ANONYMOUS_NICKNAME)
+                    .setImageUrls(DataConstant.DEFAULT_AVATAR);
+        }
+        return productComment;
     }
 
     /**

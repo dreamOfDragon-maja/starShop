@@ -1,6 +1,7 @@
 package com.starshop.service;
 
 import com.starshop.common.result.CursorCommonEntity;
+import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -29,4 +30,12 @@ public interface ProductCommentService {
      * @return
      */
     Result<?> getAppendComment(@NotBlank String firstCommentId);
+
+    /**
+     * 用户发表一级商品评论
+     * @param firstProductCommentDTO
+     * @return
+     */
+    Result<?> saveProductFirstComment(@Valid FirstProductCommentDTO firstProductCommentDTO);
+
 }

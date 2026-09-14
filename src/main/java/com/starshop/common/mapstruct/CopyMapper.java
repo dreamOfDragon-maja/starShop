@@ -2,10 +2,7 @@ package com.starshop.common.mapstruct;
 
 import com.starshop.common.result.UserInfo;
 import com.starshop.infrastructure.es.document.ProductDocument;
-import com.starshop.pojo.dto.CategoryDTO;
-import com.starshop.pojo.dto.FirstProductCommentDTO;
-import com.starshop.pojo.dto.SecondProductCommentDTO;
-import com.starshop.pojo.dto.UserUpdateDTO;
+import com.starshop.pojo.dto.*;
 import com.starshop.pojo.entity.*;
 import com.starshop.pojo.vo.*;
 import org.mapstruct.*;
@@ -53,5 +50,7 @@ public interface CopyMapper {
     ProductComment firstProductCommentDTOToProductComment(FirstProductCommentDTO firstProductCommentDTO);
 
     ProductComment secondProductCommentDTOToProductComment(SecondProductCommentDTO secondProductCommentDTO);
+
+    ProductCommentAppend appendProductFirstCommentDTOToProductCommentAppend(AppendProductFirstCommentDTO appendProductFirstCommentDTO);
 
 }

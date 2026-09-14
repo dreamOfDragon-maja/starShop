@@ -1,6 +1,8 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,6 +11,7 @@ import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.common.result.CursorCommonResult;
 import com.starshop.common.utils.BloomFilterUtils;
+import com.starshop.common.utils.MyBatisBatchExecutor;
 import com.starshop.constant.DataConstant;
 import com.starshop.constant.DatePatternConstants;
 import com.starshop.constant.MessageConstant;
@@ -17,11 +20,14 @@ import com.starshop.context.BaseContext;
 import com.starshop.exception.EmptyObjectException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
+import com.starshop.mapper.OrderMapper;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
+import com.starshop.pojo.dto.AppendProductFirstCommentDTO;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.pojo.dto.SecondProductCommentDTO;
+import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
@@ -34,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -55,6 +62,10 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     private final CopyMapper copyMapper;
 
     private final ProductCommentAppendMapper productCommentAppendMapper;
+    
+    private final MyBatisBatchExecutor myBatisBatchExecutor;
+
+    private final OrderMapper orderMapper;
     /**
      * 用户做分类查询商品一级评论
      * @param cursorCommonEntity
@@ -290,6 +301,61 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         StringRedisConnector.delete(key);
         return Result.success();
 
+    }
+
+    /**
+     * 用户对一级评论进行追加
+     * @param appendProductFirstCommentDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> appendProductFirstComment(AppendProductFirstCommentDTO appendProductFirstCommentDTO) {
+        //获取当前登录用户id
+        String userId = BaseContext.getUserId();
+        ProductCommentAppend productCommentAppend = copyMapper.appendProductFirstCommentDTOToProductCommentAppend(appendProductFirstCommentDTO);
+        //根据订单号查询商品评论
+        ProductComment productComment = lambdaQuery().eq(ProductComment::getOrderNo, appendProductFirstCommentDTO.getOrderNo()).one();
+        Long commentId = productComment.getId();
+        //在redis查询一级评论数据
+        String firstCommentKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.FIRST_COMMENT + commentId;
+        ProductComment firstProductComment = RedisConnector.getHashObject(firstCommentKey, ProductComment.class);
+        //防止缓存穿透
+        firstProductComment = getProductCommentIfRedisCacheNull(firstProductComment, commentId, firstCommentKey);
+        //过滤空对象
+        if (firstProductComment.getId().equals(DataConstant.ZERO_LONG)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //评论伪造过滤
+        if (!firstProductComment.getProductId().equals(Long.valueOf(appendProductFirstCommentDTO.getProductId()))
+                && firstProductComment.getUserId().equals(Long.valueOf(userId))) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //已经追评过滤
+        if (firstProductComment.getIsAppendComment() == DataConstant.ONE_INT) {
+            return Result.error(MessageConstant.HAVE_APPEND);
+        }
+        productCommentAppend.setProductId(firstProductComment.getProductId())
+                .setProductSpecId(firstProductComment.getProductSpecId())
+                .setOrderNo(firstProductComment.getOrderNo())
+                .setUserId(Long.valueOf(userId))
+                .setCommentId(commentId);
+        //批量操作数据库
+        myBatisBatchExecutor.executeBatch(sqlSession -> {
+            ProductCommentAppendMapper batchAppendMapper = sqlSession.getMapper(ProductCommentAppendMapper.class);
+            ProductCommentMapper batchCommentMapper = sqlSession.getMapper(ProductCommentMapper.class);
+            //新增追加商品评论
+            batchAppendMapper.insert(productCommentAppend);
+            //更新商品评论表状态
+            LambdaUpdateWrapper<ProductComment> updateWrapper = new LambdaUpdateWrapper<ProductComment>()
+                    .eq(ProductComment::getId, commentId)
+                    .set(ProductComment::getIsAppendComment, DataConstant.ONE_INT);
+            batchCommentMapper.update(updateWrapper);
+            return null;
+        });
+        RedisConnector.delete(firstCommentKey);
+        //TODO后续使用rocketmq修改订单状态为已追评
+        return Result.success();
     }
 
     /**

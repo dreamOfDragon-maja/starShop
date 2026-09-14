@@ -31,4 +31,6 @@ public class MessageConstant {
     public static final String TOM_CAT_ERROR = "系统繁忙，请稍后重试";
     public static final String DATE_TIME_PARSE_ERROR="时间格式转换异常";
     public static final String NETWORK_ERROR="网络异常";
+    public static final String HAVE_APPEND ="一条评价只允许追评一次,该评价已经追评过了";
+
 }

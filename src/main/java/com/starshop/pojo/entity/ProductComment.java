@@ -58,7 +58,7 @@ public class ProductComment {
     /**
      * 订单号
      */
-    @TableField(exist = false)
+    @TableField("order_no")
     private String orderNo;
 
 

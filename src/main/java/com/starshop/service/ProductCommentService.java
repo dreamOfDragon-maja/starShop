@@ -1,6 +1,7 @@
 package com.starshop.service;
 
 import com.starshop.common.result.CursorCommonEntity;
+import com.starshop.pojo.dto.AppendProductFirstCommentDTO;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.pojo.dto.SecondProductCommentDTO;
 import com.starshop.result.Result;
@@ -45,4 +46,11 @@ public interface ProductCommentService {
      * @return
      */
     Result<?> saveProductSecondComment(@Valid SecondProductCommentDTO secondProductCommentDTO);
+
+    /**
+     * 用户对一级评论进行追加
+     * @param appendProductFirstCommentDTO
+     * @return
+     */
+    Result<?> appendProductFirstComment(@Valid @NotNull AppendProductFirstCommentDTO appendProductFirstCommentDTO);
 }

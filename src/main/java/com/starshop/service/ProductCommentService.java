@@ -60,4 +60,13 @@ public interface ProductCommentService {
      * @return
      */
     Result<?> getProductCommentCount(@NotBlank String productId);
+
+    /**
+     * 对商品进行点赞和取消点赞
+     * @param productCommentId
+     * @param isLike
+     * @param isFirstComment
+     * @return
+     */
+    Result<?> updateProductCommentLike(@NotBlank String productCommentId, @NotNull Integer isLike, @NotNull Integer isFirstComment);
 }

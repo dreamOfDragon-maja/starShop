@@ -35,6 +35,8 @@ public class RedisKeyConstant {
     public static final String SECOND_COMMENT = "secondComment:";
     public static final String APPEND_COMMENT="appendComment:";
     public static final String COMMENT_COUNT = "commentCount:";
+    public static final String COMMENT_LIKE_MESSAGE_LIST = "commentLikeMessageList";
+
 
     /**
      * Bucket 读写标记前缀（仅用于 Redisson RBucket 锁标记，不可与业务数据 key 混用）

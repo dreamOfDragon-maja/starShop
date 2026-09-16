@@ -236,4 +236,20 @@ public class ProductController {
     public Result<?> getProductCommentCount(@RequestParam @NotBlank String productId){
         return productCommentService.getProductCommentCount(productId);
     }
+
+    /**
+     * 对商品进行点赞和取消点赞
+     * @param productCommentId
+     * @param isLike
+     * @param isFirstComment
+     * @return
+     */
+    @PutMapping("/user/product/comment/like")
+    public Result<?> updateProductCommentLike(@RequestParam @NotBlank String productCommentId
+            , @RequestParam @NotNull Integer isLike
+            , @RequestParam @NotNull Integer isFirstComment) {
+        return productCommentService.updateProductCommentLike(productCommentId, isLike, isFirstComment);
+    }
+
+
 }

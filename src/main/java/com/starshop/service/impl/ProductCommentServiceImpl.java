@@ -396,6 +396,66 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     }
 
     /**
+     * 对商品评论进行点赞和取消点赞
+     * 判断是否为一级评论,如果是,更新缓存,刷新缓存时间
+     * 如果是二级评论,新建一个二级缓存,存储点赞数(在查询二级评论的时可以进行过滤)
+     * 在评论下维护一个set集合用来判断当前用户是否已经点赞
+     */
+    @Override
+    public Result<?> updateProductCommentLike(String productCommentId, Integer isLike, Integer isFirstComment) {
+        //获取当前用户id
+        String userId = BaseContext.getUserId();
+        String message = userId + ":" + productCommentId + ":" + isLike;
+        String listKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.COMMENT_LIKE_MESSAGE_LIST;
+        //向链表左边插入数据
+        RedisConnector.opsForList().leftPush(listKey, message);
+        //判断是否为一级评论
+        if (isFirstComment == DataConstant.ONE_INT) {
+            //查询缓存
+            String firstCommentKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.FIRST_COMMENT + productCommentId;
+            ProductComment firstCommentCache = RedisConnector.getHashObject(firstCommentKey, ProductComment.class);
+            if (Objects.isNull(firstCommentCache)) {
+                //查询数据库
+                ProductComment firstProductComment = lambdaQuery().eq(ProductComment::getId, productCommentId).one();
+                //缓存空对象
+                if (Objects.isNull(firstProductComment)) {
+                    ProductComment emptyProductComment = ProductComment.builder().id(DataConstant.ZERO_LONG).build();
+                    setCommentRedisCache(firstCommentKey, emptyProductComment, redisCacheTtlProperties.getProductFirstCommentTtl());
+                    return Result.error(MessageConstant.DATA_ERROR);
+                }
+                //在数据库查询得到下更新点赞数
+                updateLikeCount(firstProductComment, isLike);
+                setCommentRedisCache(firstCommentKey, firstProductComment, redisCacheTtlProperties.getProductFirstCommentTtl());
+                updateProductCommentUserIdSet(firstProductComment.getId(), isLike, Long.valueOf(userId));
+                return Result.success();
+            }
+            //在redis缓存查询得到下更新点赞数
+            updateLikeCount(firstCommentCache, isLike);
+            setCommentRedisCache(firstCommentKey, firstCommentCache, redisCacheTtlProperties.getProductFirstCommentTtl());
+            updateProductCommentUserIdSet(firstCommentCache.getId(), isLike, Long.valueOf(userId));
+            return Result.success();
+        } else {
+            //二级评论
+            String secondCommentKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.SECOND_COMMENT + productCommentId;
+            ProductComment secondCommentCache = RedisConnector.getHashObject(secondCommentKey, ProductComment.class);
+            if (Objects.isNull(secondCommentCache)) {
+                ProductComment secondComment = lambdaQuery().eq(ProductComment::getId, productCommentId).one();
+                //在数据库查询得到下更新点赞数
+                updateLikeCount(secondComment, isLike);
+                setCommentRedisCache(secondCommentKey, secondComment, redisCacheTtlProperties.getProductSecondCommentTtl());
+                updateProductCommentUserIdSet(secondComment.getId(), isLike, Long.valueOf(userId));
+                return Result.success();
+            }
+            //在redis缓存查询得到下更新点赞数
+            updateLikeCount(secondCommentCache, isLike);
+            setCommentRedisCache(secondCommentKey, secondCommentCache, redisCacheTtlProperties.getProductSecondCommentTtl());
+            updateProductCommentUserIdSet(secondCommentCache.getId(), isLike, Long.valueOf(userId));
+            return Result.success();
+        }
+
+    }
+
+    /**
      * 传入 redis 查询后的一级评论结果
      * 进行判断是否为 null ,是会进行数据库查询,如果为空会缓存空对象
      * 不是 null ,放行,不做处理
@@ -537,4 +597,70 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         }
         return productCommentList;
     }
+
+    /**
+     * 存储评论缓存到 redis
+     * @param key 一级 key
+     * @param productComment 评论实体(一级评论 二级评论)
+     * @param ttl 过期时间
+     */
+    private void setCommentRedisCache(String key, ProductComment productComment, Long ttl) {
+        RedisConnector.setHashObject(key, productComment);
+        RedisConnector.expire(key, ttl, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 传入评论,对评论修改点赞数
+     *
+     * @param productComment 传入评论实体(一级评论或二级评论)
+     * @param isLike         是否点赞
+     */
+    private void updateLikeCount(ProductComment productComment, Integer isLike) {
+        if (Objects.isNull(productComment) || Objects.isNull(isLike)) {
+            log.error("点赞数更新异常：参数为空，位置：updateLikeCount()");
+            throw new IllegalArgumentException("点赞参数不能为空");
+        }
+        Integer likeCount = productComment.getLikeCount();
+        if (isLike == 0) {
+            likeCount--;
+        } else {
+            likeCount++;
+        }
+        productComment.setLikeCount(likeCount).setUpdatedTime(LocalDateTime.now());
+    }
+
+    /**
+     * 更新评论点赞用户 id set 缓存
+     * @param commentId 评论 id
+     * @param isLike 是否点赞
+     * @param userId 当前操作的用户 id
+     */
+    private void updateProductCommentUserIdSet(Long commentId, Integer isLike, Long userId) {
+        String key = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.COMMENT + commentId + ":" + RedisKeyConstant.USER + RedisKeyConstant.ID_LIST;
+        Boolean hasKey = RedisConnector.hasKey(key);
+        if (!hasKey) {
+            LambdaQueryWrapper<ProductCommentLike> lambdaQueryWrapper = new LambdaQueryWrapper<>(ProductCommentLike.class)
+                    .eq(ProductCommentLike::getCommentId, commentId)
+                    .eq(ProductCommentLike::getStatus, 1);
+            Set<Long> commentUserIdSet = productCommentLikeMapper.selectList(lambdaQueryWrapper).stream()
+                    .filter(Objects::nonNull)
+                    .map(ProductCommentLike::getUserId)
+                    .collect(Collectors.toSet());
+            if (isLike == 1) {
+                commentUserIdSet.add(userId);
+            } else {
+                commentUserIdSet.remove(userId);
+            }
+            RedisConnector.opsForSet().add(key, commentUserIdSet.toArray());
+            RedisConnector.expire(key, redisCacheTtlProperties.getProductCommentUserIdSetTtl(), TimeUnit.SECONDS);
+            return;
+        }
+        if (isLike == 1) {
+            RedisConnector.opsForSet().add(key, userId);
+        } else {
+            RedisConnector.opsForSet().remove(key, userId);
+        }
+        RedisConnector.expire(key, redisCacheTtlProperties.getProductCommentUserIdSetTtl(), TimeUnit.SECONDS);
+    }
+
 }

@@ -2,7 +2,6 @@ package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,14 +19,12 @@ import com.starshop.context.BaseContext;
 import com.starshop.exception.EmptyObjectException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
-import com.starshop.mapper.OrderMapper;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
 import com.starshop.pojo.dto.AppendProductFirstCommentDTO;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.pojo.dto.SecondProductCommentDTO;
-import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
@@ -65,7 +62,8 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     
     private final MyBatisBatchExecutor myBatisBatchExecutor;
 
-    private final OrderMapper orderMapper;
+    private final static String emptyProductCommentCount = "-1";
+
     /**
      * 用户做分类查询商品一级评论
      * @param cursorCommonEntity
@@ -356,6 +354,45 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         RedisConnector.delete(firstCommentKey);
         //TODO后续使用rocketmq修改订单状态为已追评
         return Result.success();
+    }
+
+
+    /**
+     * 统计商品下评论数
+     * @param productId
+     * @return
+     */
+    @Override
+    public Result<?> getProductCommentCount(String productId) {
+        Long productIdLong = Long.valueOf(productId);
+        //布隆过滤
+        if (!bloomFilterUtils.contains(productIdLong)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //查询redis
+        String key = RedisKeyConstant.PREFIX_PRODUCT + productId + ":" + RedisKeyConstant.COMMENT_COUNT;
+        String productCommentCount = StringRedisConnector.opsForValue().get(key);
+        if (StringUtils.isBlank(productCommentCount)) {
+            //查询数据库
+            Long productCommentCountLong = lambdaQuery().eq(ProductComment::getProductId, productIdLong).count();
+            if (Objects.isNull(productCommentCountLong)) {
+                //缓存空对象
+                StringRedisConnector.opsForValue().set(key, emptyProductCommentCount);
+                StringRedisConnector.expire(key, redisCacheTtlProperties.getProductCommentCountTtl(), TimeUnit.SECONDS);
+                return Result.error(MessageConstant.DATA_ERROR);
+            }
+            //查询到的结果写入缓存并返回
+            productCommentCount = productCommentCountLong.toString();
+            StringRedisConnector.opsForValue().set(key, productCommentCount);
+            StringRedisConnector.expire(key, redisCacheTtlProperties.getProductCommentCountTtl(), TimeUnit.SECONDS);
+            return Result.success(productCommentCount);
+        }
+        //过滤空对象
+        if (StringUtils.equals(productCommentCount, emptyProductCommentCount)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        return Result.success(productCommentCount);
+
     }
 
     /**

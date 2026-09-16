@@ -226,4 +226,14 @@ public class ProductController {
     public Result<?> appendProductFirstComment(@Valid @RequestBody @NotNull AppendProductFirstCommentDTO appendProductFirstCommentDTO) {
         return productCommentService.appendProductFirstComment(appendProductFirstCommentDTO);
     }
+
+    /**
+     * 统计商品下评论数
+     * @param productId
+     * @return
+     */
+    @GetMapping("/user/product/comment/count/show")
+    public Result<?> getProductCommentCount(@RequestParam @NotBlank String productId){
+        return productCommentService.getProductCommentCount(productId);
+    }
 }

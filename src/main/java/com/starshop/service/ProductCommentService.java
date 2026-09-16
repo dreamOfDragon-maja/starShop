@@ -53,4 +53,11 @@ public interface ProductCommentService {
      * @return
      */
     Result<?> appendProductFirstComment(@Valid @NotNull AppendProductFirstCommentDTO appendProductFirstCommentDTO);
+
+    /**
+     * 统计商品下评论数
+     * @param productId
+     * @return
+     */
+    Result<?> getProductCommentCount(@NotBlank String productId);
 }

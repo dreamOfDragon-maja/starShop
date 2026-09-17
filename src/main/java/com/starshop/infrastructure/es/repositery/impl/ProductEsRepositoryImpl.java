@@ -472,4 +472,36 @@ public class ProductEsRepositoryImpl implements ProductEsRepository {
 
 
     }
+
+    /**
+     * 根据字段指定排序 查询指定数量商品文档
+     * @param limit 查询数
+     * @param fieldName 字段名
+     * @param commonSortTypeEnum 排序顺序
+     * @return 商品文档列表
+     */
+    @Override
+    public List<ProductDocument> searchLimitOrderByField(Integer limit, String fieldName, CommonSortTypeEnum commonSortTypeEnum) {
+        if (StringUtils.isBlank(fieldName) || Objects.isNull(limit) || Objects.isNull(commonSortTypeEnum)) {
+            return Collections.emptyList();
+        }
+        try {
+            //获取排序方式
+            SortOrder sortOrder = commonSortTypeEnum.isAsc() ? SortOrder.Asc:SortOrder.Desc;
+            SearchResponse<ProductDocument> searchResponse = esClient.search(s -> s.query(q -> q.term(
+                                    t -> t.field(ProductDocument.Fields.status)
+                                            .value(CommonStatus.ACTIVE.getNumber())
+                            ))
+                            .sort(so -> so.field(f -> f.field(fieldName).order(sortOrder)))
+                            .size(limit)
+                    , ProductDocument.class);
+            return searchResponse.hits().hits()
+                    .stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("es 字段排序查询失败 ");
+        }
+
+    }
 }

@@ -6,6 +6,7 @@ import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.repositery.ProductEsRepository;
 import com.starshop.infrastructure.es.service.ProductDocumentService;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
+import com.starshop.pojo.enums.CommonSortTypeEnum;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
 import com.starshop.pojo.vo.SimpleProductVO;
 import lombok.RequiredArgsConstructor;
@@ -137,4 +138,13 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
     public void batchSaveProductDocument(List<ProductDocument> productDocumentList) {
         productEsRepository.batchSave(productDocumentList);
     }
+
+    /**
+     * 查询指定数量的热门商品
+     * @param limit 查询数量
+     * @return 热门商品文档列表
+     */
+    @Override
+    public List<ProductDocument> searchLimitHotProductDocument(Integer limit) {
+        return productEsRepository.searchLimitOrderByField(limit,ProductDocument.Fields.salesCount, CommonSortTypeEnum.DESC);    }
 }

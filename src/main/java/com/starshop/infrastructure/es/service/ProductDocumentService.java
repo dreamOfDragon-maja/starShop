@@ -67,4 +67,12 @@ public interface ProductDocumentService {
      * @return  商品文档列表
      */
     List<ProductDocument> searchLimitAfterProductId(Integer limit, Long productId);
+
+    /**
+     * 查询指定数量的热门商品
+     * @param limit 查询数量
+     * @return 热门商品文档列表
+     */
+    List<ProductDocument> searchLimitHotProductDocument(Integer limit);
+
 }

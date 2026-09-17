@@ -1,6 +1,7 @@
 package com.starshop.infrastructure.es.repositery;
 
 import com.starshop.infrastructure.es.document.ProductDocument;
+import com.starshop.pojo.enums.CommonSortTypeEnum;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
 import com.starshop.pojo.vo.SimpleProductVO;
 
@@ -107,4 +108,13 @@ public interface ProductEsRepository {
      * @return
      */
     List<ProductDocument> searchLimitAfterId(Integer limit, Long productId);
+
+    /**
+     * 根据字段指定排序 查询指定数量商品文档
+     * @param limit 查询数
+     * @param fieldName 字段名
+     * @param commonSortTypeEnum 排序顺序
+     * @return 商品文档列表
+     */
+    List<ProductDocument> searchLimitOrderByField(Integer limit, String fieldName, CommonSortTypeEnum commonSortTypeEnum);
 }

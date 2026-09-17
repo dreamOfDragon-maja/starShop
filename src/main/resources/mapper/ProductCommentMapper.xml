@@ -4,10 +4,15 @@
 <mapper namespace="com.starshop.mapper.ProductCommentMapper">
 
     <update id="updateProductCommentLikeCount">
-            <foreach collection="map" item="val" index="key" separator=";">
-                UPDATE product_comment
-                SET like_count = like_count + #{val}
-                WHERE id = #{key}
-            </foreach>
+        UPDATE product_comment
+        SET like_count = CASE id
+        <foreach collection="map" item="val" index="key">
+            WHEN #{key} THEN like_count + #{val}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="map" index="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
     </update>
 </mapper>

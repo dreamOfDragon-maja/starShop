@@ -126,65 +126,6 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
     }
 
     /**
-     * 刷新热门商品缓存：DB 按销量 Top N → Redis Hash + ID列表
-     * 采用「先写副本 → 切换」的方式保证读不中断
-     */
-    @Override
-    public void refreshHotProductCache() {
-        //数据库查询商品并且按照降序排序
-        int size = redisCacheCountProperties.getHotProductCacheSize();
-        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Product::getStatus, DataConstant.ONE_INT)
-                .orderByDesc(Product::getSalesCount)
-                .last("LIMIT " + size);
-        List<Product> productList = productMapper.selectList(wrapper);
-
-        //判断是否不存在
-        if (productList == null || productList.isEmpty()) {
-            log.error("无商品信息");
-            return;
-        }
-        //利用copymapper将product转化
-        List<ProductDocument> documentList = productList.stream().map(copyMapper::productToDocument).toList();
-
-        //先写入副本(先删除后更新)
-        RedisConnector.delete(dataCopyKey);
-        RedisConnector.delete(idListCopyKey);
-
-        Map<String, Object> hashMap = new HashMap<>();
-        for (ProductDocument doc : documentList) {
-            hashMap.put(String.valueOf(doc.getId()), doc);
-        }
-
-        RedisConnector.opsForHash().putAll(dataCopyKey, hashMap);
-
-        List<Long> idList = documentList.stream().map(ProductDocument::getId).toList();
-        String json = JacksonUtils.toJson(idList);
-        StringRedisConnector.opsForValue().set(idListCopyKey, json);
-
-        //再加锁标记写入redis
-        RBucket<BucketConstant.BucketSign> bucket = redissonClient.getBucket(signKey);
-        RBucket<BucketConstant.BucketSign> bucketCp = redissonClient.getBucket(idSignKey);
-        BucketConstant.BucketSign writeSign = new BucketConstant.BucketSign(
-                BucketConstant.BucketThreadType.WRITE_THREAD, UUID.randomUUID().toString()
-        );
-        bucket.set(writeSign, Duration.ofSeconds(redisBucketTtlProperties.getHotProductWriteBucketTtl()));
-        bucketCp.set(writeSign, Duration.ofSeconds(redisBucketTtlProperties.getHotProductWriteBucketTtl()));
-
-        //切换主副更新redis中的数据
-        RedisConnector.delete(dataKey);
-        RedisConnector.delete(idListKey);
-        RedisConnector.rename(dataCopyKey, dataKey);
-        RedisConnector.rename(idListCopyKey, idListKey);
-
-        // 清除写锁
-        bucket.delete();
-        bucketCp.delete();
-
-
-    }
-
-    /**
      * 查询热门商品ID列表
      */
     @Override

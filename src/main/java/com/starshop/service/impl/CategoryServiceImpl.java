@@ -216,6 +216,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         List<Category> categoryTree = caffeineUtils.getCategoryTree();
         //更新策略opsforhash
         //hashkey =firstCategory: + firstCategoryId;
+        if (categoryTree == null) {
+            refreshCategoryCache();
+            categoryTree = caffeineUtils.getCategoryTree();
+        }
         HashMap<String, Object> map = new HashMap<>(categoryTree.size());
         for (Category category : categoryTree) {
             Long firstCategoryId = category.getId();

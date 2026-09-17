@@ -6,7 +6,7 @@ spring:
   config:
     import: classpath:redisCache.yml
   datasource:
-    url: jdbc:mysql://${starShop.datasource.host}:${starShop.datasource.port}/${starShop.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${starShop.datasource.host}:${starShop.datasource.port}/${starShop.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&allowMultiQueries=true
     username: ${starShop.datasource.username}
     password: ${starShop.datasource.password}
     driver-class-name: ${starShop.datasource.driver-class-name}

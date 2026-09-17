@@ -19,6 +19,7 @@ import com.starshop.context.BaseContext;
 import com.starshop.exception.EmptyObjectException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
+import com.starshop.infrastructure.redis.generator.RedisMessageGenerator;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
@@ -405,7 +406,7 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     public Result<?> updateProductCommentLike(String productCommentId, Integer isLike, Integer isFirstComment) {
         //获取当前用户id
         String userId = BaseContext.getUserId();
-        String message = userId + ":" + productCommentId + ":" + isLike;
+        String message = RedisMessageGenerator.CommentLikeMessageCreate(userId, productCommentId, isLike);
         String listKey = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.COMMENT_LIKE_MESSAGE_LIST;
         //向链表左边插入数据
         RedisConnector.opsForList().leftPush(listKey, message);

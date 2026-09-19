@@ -45,4 +45,10 @@ public class RedisKeyConstant {
     public static final String BUCKET_SIGN_PREFIX = "bucket:sign:";
     public static final String BUCKET_PREFIX = "bucket:";
 
+    /**
+     * 购物车模块
+     */
+    public static final String PREFIX_CART = "cart:";
+    public static final String PRODUCT = "product:";
+    public static final String PRODUCT_SPEC = "productSpec:";
 }

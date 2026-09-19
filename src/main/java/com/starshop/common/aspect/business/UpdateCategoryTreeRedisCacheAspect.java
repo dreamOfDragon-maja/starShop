@@ -14,7 +14,7 @@ import java.util.Objects;
 @Component
 public class UpdateCategoryTreeRedisCacheAspect {
 
-      @Pointcut("@annotation(com.starshop.common.annotation.UpdateCategoryTreeRedisCacheAnnotation)")
+      @Pointcut("@annotation(com.starshop.common.annotation.business.UpdateCategoryTreeRedisCacheAnnotation)")
       private void pointCut(){
       }
 

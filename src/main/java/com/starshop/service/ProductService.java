@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface ProductService extends IService<Product> {
 
@@ -77,4 +79,11 @@ public interface ProductService extends IService<Product> {
      * @return
      */
     SimpleCursorCommonResult getSimpleProductByScrollQuery(Long beginId, Integer querySize);
+
+    /**
+     * 根据 productIdSet 返回 productId与product映射Map集
+     * @param productIdSet
+     * @return
+     */
+    Map<Long, Product> getProductDetailByProductIdSet(Set<Long> productIdSet);
 }

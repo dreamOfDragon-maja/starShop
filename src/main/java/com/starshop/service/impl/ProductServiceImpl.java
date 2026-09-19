@@ -35,12 +35,16 @@ import com.starshop.service.CollectionService;
 import com.starshop.service.MqConsumerFailedMsgService;
 import com.starshop.service.ProductRedisCacheService;
 import com.starshop.service.ProductService;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -265,6 +269,94 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
         return getCursorCommonResult(productDocuments, querySize, productSortTypeEnum, sortType);
 
+    }
+
+    /**
+     * 根据 productIdSet 返回 productId与product映射Map集
+     * 其中会更新redis缓存
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<Long, Product> getProductDetailByProductIdSet(Set<Long> productIdSet) {
+        productIdSet = new HashSet<>(productIdSet);
+        if (productIdSet.isEmpty()) {
+            return new HashMap<>(0);
+        }
+        //由idset转成keylist
+        List<String> keyList = productIdSet.stream().map(ProductServiceImpl::productDetail).toList();
+        //批量插入redis
+        List<Object> result = RedisConnector.executePipelined(new SessionCallback<>() {
+            @Override
+            public <K, V> Object execute(@Nonnull RedisOperations<K, V> operations) throws DataAccessException {
+                for (String key : keyList) {
+                    operations.opsForHash().entries((K) key);
+                }
+                return null;
+            }
+        });
+        if (result.isEmpty()) {
+            //结果为空，根据idSet查询数据库并写入redis
+            List<Product> productList = getProductDetailAndSaveCacheByProductIdSet(productIdSet);
+            return productListToMap(productList);
+        }
+        //转成product实体
+        List<Product> redisProductList = result.stream().map(object -> (Map<String, Object>) object)
+                .map(map -> JacksonUtils.fromMap(map, Product.class))
+                .collect(Collectors.toList());
+        //将已经查询出结果的id删除
+        Set<Long> redisProductIdSet = redisProductList.stream().map(Product::getId).collect(Collectors.toSet());
+        productIdSet.removeAll(redisProductIdSet);
+        //代表全部查询成功
+        if (productIdSet.isEmpty()) {
+            return productListToMap(redisProductList);
+        }
+        //将剩余id继续查询
+        List<Product> productList = getProductDetailAndSaveCacheByProductIdSet(productIdSet);
+        redisProductList.addAll(productList);
+        return productListToMap(redisProductList);
+
+    }
+
+
+    /**
+     * 将结果封装为map（key = 商品id）
+     * @param productList
+     * @return
+     */
+    private Map<Long, Product> productListToMap(List<Product> productList) {
+        if (Objects.isNull(productList) || productList.isEmpty()) {
+            return new HashMap<>(0);
+
+        }
+        HashMap<Long, Product> resultMap = new HashMap<>(productList.size());
+        for (Product product : productList) {
+            resultMap.put(product.getId(), product);
+        }
+        return resultMap;
+    }
+
+    /**
+     * 根据idset集合查询商品并把商品写入缓存
+     * @param productIdSet
+     * @return
+     */
+    private List<Product> getProductDetailAndSaveCacheByProductIdSet(Set<Long> productIdSet) {
+        List<Product> productList = productMapper.getProductDetailByProductIdSet(productIdSet);
+        for (Product product : productList) {
+            String key = RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.DETAIL + product.getId();
+            RedisConnector.setHashObject(key, product);
+        }
+        return productList;
+    }
+
+    /**
+     * productDetail
+     * product: + detail: + productId
+     * @param productId
+     * @return
+     */
+    public static String productDetail(Long productId) {
+        return RedisKeyConstant.PREFIX_PRODUCT + RedisKeyConstant.DETAIL + productId;
     }
 
     /**

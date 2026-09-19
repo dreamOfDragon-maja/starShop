@@ -1,7 +1,9 @@
 package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.starshop.pojo.dto.CartProductDTO;
 import com.starshop.pojo.entity.Cart;
+import com.starshop.result.Result;
 
 public interface CartService extends IService<Cart> {
 
@@ -11,4 +13,9 @@ public interface CartService extends IService<Cart> {
      */
     void syncCartToMysql(String userId);
 
+    /**
+     * 添加商品到购物车
+     * @return
+     */
+    Result addProductToCart(CartProductDTO cartProductDTO);
 }

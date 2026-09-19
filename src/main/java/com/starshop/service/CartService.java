@@ -30,4 +30,10 @@ public interface CartService extends IService<Cart> {
      * @return
      */
     Result clearCart();
+
+    /**
+     * 批量删除购物车商品(单个+批量)
+     * @return
+     */
+    Result deleteCartProduct(String productIds, String specIds);
 }

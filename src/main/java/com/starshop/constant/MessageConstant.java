@@ -32,5 +32,8 @@ public class MessageConstant {
     public static final String DATE_TIME_PARSE_ERROR="时间格式转换异常";
     public static final String NETWORK_ERROR="网络异常";
     public static final String HAVE_APPEND ="一条评价只允许追评一次,该评价已经追评过了";
+    public static final String CART_NOT_EXIST_ERROR = "删除的购物车不存在";
+    public static final String DELETE_ERROR = "删除失败,请重试";
+
 
 }

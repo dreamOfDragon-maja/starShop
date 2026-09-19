@@ -231,6 +231,53 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
     }
 
     /**
+     * 批量删除购物车商品(单个+批量)
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result deleteCartProduct(String productIds, String specIds) {
+        if (StringUtils.isBlank(productIds) || StringUtils.isBlank(specIds)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        String userId = BaseContext.getUserId();
+        //将传入的ids处理成list
+        List<String> productIdsList = Arrays.stream(productIds.split(",")).toList();
+        List<String> specIdsList = Arrays.stream(specIds.split(",")).toList();
+        if (productIdsList.isEmpty() && specIdsList.isEmpty()) {
+            return Result.error(MessageConstant.CART_NOT_EXIST_ERROR);
+        }
+        if (productIdsList.size() != specIdsList.size()) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //构造查询条件
+        LambdaQueryWrapper<Cart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        for (int i = 0; i < productIdsList.size(); i++) {
+            String productId = productIdsList.get(i);
+            String specId = specIdsList.get(i);
+            lambdaQueryWrapper.or(wrapper ->
+                    wrapper.eq(Cart::getUserId, userId).eq(Cart::getProductId, productId).eq(Cart::getSpecId, specId));
+        }
+        //查询要删除的购物车
+        List<Cart> carts = list(lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(carts)) {
+            return Result.error(MessageConstant.CART_NOT_EXIST_ERROR);
+        }
+        if (carts.size() != productIdsList.size()) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //删除数据
+        boolean removeIsSuccess = remove(lambdaQueryWrapper);
+        if (!removeIsSuccess) {
+            return Result.error(MessageConstant.DELETE_ERROR);
+        }
+        HashMap<String, Object> map = new HashMap<>(2);
+        map.put(DELETE_IDS, productIdsList);
+        map.put(SUCCESS_COUNT, productIdsList.size());
+        return Result.success(map);
+    }
+
+    /**
      * 将 Redis 缓存中的购物车同步到 MySQL
      * @param userId 用户ID
      */

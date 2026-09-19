@@ -43,4 +43,14 @@ public class CartController {
     public Result clearCart() {
         return cartService.clearCart();
     }
+
+    /**
+     * 批量删除购物车商品(单个+批量)
+     * @return
+     */
+    @DeleteMapping("/products")
+    @SaveCartRedisCacheToMysqlAnnotation
+    public Result deleteCartProduct(@RequestParam("productIds") String productIds, @RequestParam("specIds") String specIds) {
+        return cartService.deleteCartProduct(productIds, specIds);
+    }
 }

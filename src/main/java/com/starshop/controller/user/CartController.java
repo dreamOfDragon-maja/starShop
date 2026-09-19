@@ -1,6 +1,7 @@
 package com.starshop.controller.user;
 
 import com.starshop.common.annotation.business.SaveCartRedisCacheToMysqlAnnotation;
+import com.starshop.pojo.dto.CartDTO;
 import com.starshop.pojo.dto.CartProductDTO;
 import com.starshop.result.Result;
 import com.starshop.service.CartService;
@@ -53,4 +54,16 @@ public class CartController {
     public Result deleteCartProduct(@RequestParam("productIds") String productIds, @RequestParam("specIds") String specIds) {
         return cartService.deleteCartProduct(productIds, specIds);
     }
+
+    /**
+     * 将前端的购物车数据(List)更新到redis->延迟队列更新mysql
+     * @param cartDTO
+     * @return
+     */
+    @PutMapping("/update")
+    @SaveCartRedisCacheToMysqlAnnotation
+    public Result mergeCart(@RequestBody CartDTO cartDTO) {
+        return cartService.mergeCart(cartDTO);
+    }
+
 }

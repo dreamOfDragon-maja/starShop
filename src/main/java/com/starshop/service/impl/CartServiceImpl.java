@@ -3,11 +3,13 @@ package com.starshop.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.annotation.business.SaveCartRedisCacheToMysqlAnnotation;
+import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.CartMapper;
+import com.starshop.pojo.dto.CartDTO;
 import com.starshop.pojo.dto.CartProductDTO;
 import com.starshop.pojo.entity.Cart;
 import com.starshop.pojo.entity.CartItem;
@@ -39,6 +41,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
 
     @Resource
     private RedisCacheTtlProperties redisCacheTtlProperties;
+
+    @Resource
+    private CopyMapper copyMapper;
 
     private static final String DELETE_IDS = "deletedIds";
     private static final String SUCCESS_COUNT = "successCount";
@@ -124,11 +129,13 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
     private void saveCartListToRedis(List<CartItem> cartList, String cartKey) {
         HashMap<String, Object> resultMap = new HashMap<>(cartList.size());
         Set<Long> productIdSet = cartList.stream().map(CartItem::getProductId).map(Long::valueOf).collect(Collectors.toSet());
+        //根据商品id查询商品具体信息
         Map<Long, Product> productDetailMap = productService.getProductDetailByProductIdSet(productIdSet);
         for (CartItem cartItem : cartList) {
             String productId = cartItem.getProductId();
             String specId = cartItem.getSpecId();
             String cartHashKey = RedisKeyConstant.PRODUCT + productId + "," + RedisKeyConstant.PRODUCT_SPEC + specId;
+            //设置商品信息
             cartItem = replenishCartItem(productDetailMap, cartItem);
             resultMap.put(cartHashKey, cartItem);
         }
@@ -275,6 +282,31 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         map.put(DELETE_IDS, productIdsList);
         map.put(SUCCESS_COUNT, productIdsList.size());
         return Result.success(map);
+    }
+
+    /**
+     * 将前端的购物车数据(List)更新到redis->延迟队列更新mysql
+     * @param cartDTO
+     * @return
+     */
+    @Override
+    @SaveCartRedisCacheToMysqlAnnotation
+    public Result mergeCart(CartDTO cartDTO) {
+        List<CartProductDTO> carts = cartDTO.getCartItems();
+        if (carts.isEmpty()) {
+            return Result.success();
+        }
+        String userId = BaseContext.getUserId();
+        List<CartItem> cartItemList = carts.stream().map(cartProductDTO -> copyMapper.cartProductDTOToCartItem(cartProductDTO))
+                //设置用户id
+                .peek(cartItem -> cartItem.setUserId(userId))
+                .toList();
+        //删除key
+        String cartKey = RedisKeyConstant.PREFIX_CART + RedisKeyConstant.USER + userId;
+        RedisConnector.delete(cartKey);
+        //保存购物车信息
+        saveCartListToRedis(cartItemList, cartKey);
+        return Result.success(carts);
     }
 
     /**

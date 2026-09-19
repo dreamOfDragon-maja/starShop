@@ -53,4 +53,6 @@ public interface CopyMapper {
 
     ProductCommentAppend appendProductFirstCommentDTOToProductCommentAppend(AppendProductFirstCommentDTO appendProductFirstCommentDTO);
 
+    CartItem cartProductDTOToCartItem(CartProductDTO cartProductDTO);
+
 }

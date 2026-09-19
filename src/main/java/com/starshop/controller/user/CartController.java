@@ -33,4 +33,14 @@ public class CartController {
     public Result getCartList(){
         return cartService.getCartList();
     }
+
+    /**
+     * 清空购物车
+     * @return
+     */
+    @DeleteMapping("/clear")
+    @SaveCartRedisCacheToMysqlAnnotation
+    public Result clearCart() {
+        return cartService.clearCart();
+    }
 }

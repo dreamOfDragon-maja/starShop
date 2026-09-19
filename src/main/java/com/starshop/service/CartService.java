@@ -25,4 +25,9 @@ public interface CartService extends IService<Cart> {
      */
     Result getCartList();
 
+    /**
+     * 清空购物车
+     * @return
+     */
+    Result clearCart();
 }

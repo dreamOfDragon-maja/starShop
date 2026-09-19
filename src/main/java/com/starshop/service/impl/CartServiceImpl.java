@@ -1,5 +1,6 @@
 package com.starshop.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.annotation.business.SaveCartRedisCacheToMysqlAnnotation;
 import com.starshop.constant.MessageConstant;
@@ -38,6 +39,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
 
     @Resource
     private RedisCacheTtlProperties redisCacheTtlProperties;
+
+    private static final String DELETE_IDS = "deletedIds";
+    private static final String SUCCESS_COUNT = "successCount";
 
     /**
      * 添加商品到购物车
@@ -202,6 +206,28 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         //处理返回数据
         cartList = cartMap.values().stream().map(object -> (CartItem) object).toList();
         return Result.success(cartList);
+    }
+
+    /**
+     * 清空购物车
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result clearCart() {
+        String userId = BaseContext.getUserId();
+        List<Cart> removeCarts = lambdaQuery().eq(Cart::getUserId, userId).list();
+        if (removeCarts.isEmpty()) {
+            return Result.success(removeCarts);
+        }
+        List<Long> removeCartIds = removeCarts.stream().map(Cart::getId).toList();
+        LambdaQueryWrapper<Cart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Cart::getUserId,userId);
+        int deletedRowsCount = cartMapper.delete(lambdaQueryWrapper);
+        Map<String, Object> map = new HashMap<>(2);
+        map.put(DELETE_IDS, removeCartIds);
+        map.put(SUCCESS_COUNT, deletedRowsCount);
+        return Result.success(map);
     }
 
     /**

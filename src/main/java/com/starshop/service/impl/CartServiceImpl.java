@@ -18,6 +18,7 @@ import com.starshop.result.Result;
 import com.starshop.service.CartService;
 import com.starshop.service.ProductService;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -158,6 +159,49 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
                 .setProductName(product.getName()).setProductImage(product.getImage())
                 .setSpecText(productSpec.getSpecText());
         return cartItem;
+    }
+
+    /**
+     * 获取购物车列表
+     * @return
+     */
+    @Override
+    public Result getCartList() {
+        String userId = BaseContext.getUserId();
+        //查询redis
+        String cartKey = RedisKeyConstant.PREFIX_CART + RedisKeyConstant.USER + userId;
+        //构造空对象HashKey
+        String emptyCartHashKey = RedisKeyConstant.PRODUCT + "0" + "," + RedisKeyConstant.PRODUCT_SPEC + "0";
+        Map<String, Object> cartMap = RedisConnector.opsForHash().entries(cartKey);
+        //初始化
+        List<CartItem> cartList;
+        if (cartMap.isEmpty()) {
+            //查数据库
+            cartList = cartMapper.getCartList(userId);
+            if (cartList.isEmpty()) {
+                //缓存空对象
+                RedisConnector.opsForHash().put(cartKey,emptyCartHashKey,"");
+                return Result.success(Collections.emptyList());
+            }
+            //写入缓存
+            HashMap<String, CartItem> resultMap = new HashMap<>(cartList.size());
+            for (CartItem cartItem : cartList) {
+                String productId = cartItem.getProductId();
+                String specId = cartItem.getSpecId();
+                String cartHashKey = RedisKeyConstant.PRODUCT + productId + "," + RedisKeyConstant.PRODUCT_SPEC + specId;
+                resultMap.put(cartHashKey,cartItem);
+            }
+            RedisConnector.opsForHash().putAll(cartKey,resultMap);
+            RedisConnector.expire(cartKey, redisCacheTtlProperties.getCartTtl(), TimeUnit.SECONDS);
+            return Result.success(cartList);
+        }
+        //过滤空对象
+        if (cartMap.containsKey(emptyCartHashKey)) {
+            return Result.success(Collections.emptyList());
+        }
+        //处理返回数据
+        cartList = cartMap.values().stream().map(object -> (CartItem) object).toList();
+        return Result.success(cartList);
     }
 
     /**

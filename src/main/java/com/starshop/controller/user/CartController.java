@@ -5,10 +5,7 @@ import com.starshop.pojo.dto.CartProductDTO;
 import com.starshop.result.Result;
 import com.starshop.service.CartService;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -26,5 +23,14 @@ public class CartController {
     @SaveCartRedisCacheToMysqlAnnotation
     public Result addProductToCart(@RequestBody CartProductDTO cartProductDTO){
         return cartService.addProductToCart(cartProductDTO);
+    }
+
+    /**
+     * 获取购物车列表
+     * @return
+     */
+    @GetMapping("/list")
+    public Result getCartList(){
+        return cartService.getCartList();
     }
 }

@@ -18,4 +18,11 @@ public interface CartService extends IService<Cart> {
      * @return
      */
     Result addProductToCart(CartProductDTO cartProductDTO);
+
+    /**
+     * 获取购物车列表
+     * @return
+     */
+    Result getCartList();
+
 }

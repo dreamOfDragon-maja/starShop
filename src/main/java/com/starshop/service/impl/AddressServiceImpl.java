@@ -16,6 +16,7 @@ import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -23,6 +24,9 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
 
     @Resource
     private CopyMapper copyMapper;
+
+    private static final String ADDRESS_ID = "addressId";
+    private static final String DELETED = "deleted";
 
 
     /**
@@ -79,6 +83,23 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
         }
         return Result.success(address);
 
+    }
+
+    /**
+     * 删除地址
+     * @param id
+     * @return
+     */
+    @Override
+    public Result deleteAddress(String id) {
+        boolean isSuccess = removeById(id);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        HashMap<String, Object> map = new HashMap<>(2);
+        map.put(ADDRESS_ID, id);
+        map.put(DELETED, true);
+        return Result.success(map);
     }
 
     /**

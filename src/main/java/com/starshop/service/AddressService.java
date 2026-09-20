@@ -27,4 +27,11 @@ public interface AddressService extends IService<Address> {
      * @return
      */
     Result updateAddress(@Valid AddressDTO addressDTO);
+
+    /**
+     * 删除地址
+     * @param id
+     * @return
+     */
+    Result deleteAddress(String id);
 }

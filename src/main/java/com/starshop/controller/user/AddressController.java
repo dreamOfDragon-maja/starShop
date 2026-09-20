@@ -45,4 +45,15 @@ public class AddressController {
 
     }
 
+    /**
+     * 删除地址
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/delete")
+    public Result deleteAddress(@RequestParam String id) {
+        return addressService.deleteAddress(id);
+
+    }
+
 }

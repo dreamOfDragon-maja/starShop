@@ -55,4 +55,6 @@ public interface CopyMapper {
 
     CartItem cartProductDTOToCartItem(CartProductDTO cartProductDTO);
 
+    Address addressDTOToAddress(AddressDTO addressDTO);
+
 }

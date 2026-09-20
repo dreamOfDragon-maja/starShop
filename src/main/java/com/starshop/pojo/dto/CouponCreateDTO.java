@@ -1,8 +1,12 @@
 package com.starshop.pojo.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.starshop.constant.DatePatternConstants;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -39,9 +43,13 @@ public class CouponCreateDTO {
     private Integer validMode;
 
     //固定有效期开始时间，模式2传null
+    @DateTimeFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
+    @JsonFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
     private LocalDateTime validStart;
 
     //固定有效期结束时间，模式2传null
+    @DateTimeFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
+    @JsonFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
     private LocalDateTime validEnd;
 
     //领券后有效天数，模式1传null
@@ -67,6 +75,8 @@ public class CouponCreateDTO {
     private Integer status;
 
     @NotNull(message = "发行时间不能为空")
+    @DateTimeFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
+    @JsonFormat(pattern = DatePatternConstants.DATE_TIME_FORM)
     //优惠券发行时间
     private LocalDateTime releaseTime;
 }

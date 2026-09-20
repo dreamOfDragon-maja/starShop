@@ -57,4 +57,6 @@ public interface CopyMapper {
 
     Address addressDTOToAddress(AddressDTO addressDTO);
 
+    Coupon couponCreateDTOToCoupon(CouponCreateDTO couponCreateDTO);
+
 }

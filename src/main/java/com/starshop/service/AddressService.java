@@ -15,4 +15,9 @@ public interface AddressService extends IService<Address> {
      */
     Result insertAddress(@Valid AddressDTO addressDTO);
 
+    /**
+     * 查询地址列表
+     * @return
+     */
+    Result getAddressList();
 }

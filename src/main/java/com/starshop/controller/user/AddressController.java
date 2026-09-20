@@ -5,10 +5,7 @@ import com.starshop.result.Result;
 import com.starshop.service.AddressService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/address")
@@ -27,4 +24,14 @@ public class AddressController {
         return addressService.insertAddress(addressDTO);
 
     }
+
+    /**
+     * 查询地址列表
+     * @return
+     */
+    @GetMapping("/list")
+    public Result getAddressList() {
+        return addressService.getAddressList();
+    }
+
 }

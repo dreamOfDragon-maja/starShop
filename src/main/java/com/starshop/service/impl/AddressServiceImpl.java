@@ -24,6 +24,18 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
     @Resource
     private CopyMapper copyMapper;
 
+
+    /**
+     * 查询地址列表
+     * @return
+     */
+    @Override
+    public Result getAddressList() {
+        String userId = BaseContext.getUserId();
+        List<Address> list = lambdaQuery().eq(Address::getUserId, userId).list();
+        return Result.success(list);
+    }
+
     /**
      * 新增地址
      * @param addressDTO

@@ -20,4 +20,11 @@ public interface AddressService extends IService<Address> {
      * @return
      */
     Result getAddressList();
+
+    /**
+     * 修改地址
+     * @param addressDTO
+     * @return
+     */
+    Result updateAddress(@Valid AddressDTO addressDTO);
 }

@@ -34,4 +34,15 @@ public class AddressController {
         return addressService.getAddressList();
     }
 
+    /**
+     * 修改地址
+     * @param addressDTO
+     * @return
+     */
+    @PutMapping("/update")
+    public Result updateAddress(@RequestBody @Valid AddressDTO addressDTO) {
+        return addressService.updateAddress(addressDTO);
+
+    }
+
 }

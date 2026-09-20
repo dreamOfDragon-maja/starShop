@@ -61,6 +61,27 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
     }
 
     /**
+     * 修改地址
+     * @param addressDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result updateAddress(AddressDTO addressDTO) {
+        String userId = BaseContext.getUserId();
+        Address address = copyMapper.addressDTOToAddress(addressDTO);
+        AddressServiceImpl addressService = (AddressServiceImpl) AopContext.currentProxy();
+        addressService.makeOnlyHaveOneDefault(addressDTO, userId);
+        address.setUserId(Long.valueOf(userId));
+        boolean isSuccess = updateById(address);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        return Result.success(address);
+
+    }
+
+    /**
      * 保证只有一个默认地址
      * @param addressDTO
      * @param userId

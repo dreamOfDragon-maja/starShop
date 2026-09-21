@@ -51,4 +51,15 @@ public class RedisKeyConstant {
     public static final String PREFIX_CART = "cart:";
     public static final String PRODUCT = "product:";
     public static final String PRODUCT_SPEC = "productSpec:";
+
+    /**
+     * 优惠券模块
+     */
+    public static final String PREFIX_COUPON = "coupon:";
+    public static final String COUPON_FIXED_TIME_UN_BEGIN = "couponFixedTimeUnBegin";
+    public static final String COUPON_FIXED_TIME_IN_PROGRESS = "couponFixedTimeInProgress";
+    public static final String AFTER_RECEIVE_TIME_UN_BEGIN = "afterReceiveTimeUnBegin";
+    public static final String AFTER_RECEIVE_TIME_IN_PROGRESS = "afterReceiveTimeInProgress";
+    public static final String USE_STATUS = "useStatus:";
+
 }

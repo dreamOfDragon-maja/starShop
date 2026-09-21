@@ -14,4 +14,9 @@ public interface CouponService extends IService<Coupon> {
      * @return
      */
     Result<?> saveCouponAdmin(@Valid @NotNull CouponCreateDTO couponCreateDTO);
+
+    /**
+     * 更新优惠券缓存
+     */
+    void updateCouponRedisCache();
 }

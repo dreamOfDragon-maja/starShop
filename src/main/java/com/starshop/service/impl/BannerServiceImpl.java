@@ -8,6 +8,7 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.BannerMapper;
 import com.starshop.pojo.dto.BannerDTO;
+import com.starshop.pojo.dto.BannerSortDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.pojo.enums.BannerStatus;
 import com.starshop.result.Result;
@@ -27,6 +28,8 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
     private CopyMapper copyMapper;
 
     private static final String DELETE_ID = "deleteId";
+    private static final String BANNER_ID = "bannerId";
+    private static final String SORT = "sort";
 
     /**
      * 获取首页联播图列表
@@ -111,5 +114,19 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
         HashMap<String, Object> resultMap = new HashMap<>(1);
         resultMap.put(DELETE_ID, id);
         return Result.success(resultMap);
+    }
+
+    /**
+     * 更新 Banner 排序
+     * @param bannerSortDTO
+     * @return
+     */
+    @Override
+    public Result updateSort(BannerSortDTO bannerSortDTO) {
+        lambdaUpdate().set(Banner::getSort, bannerSortDTO.getSort()).eq(Banner::getId, bannerSortDTO.getId()).update();
+        HashMap<String, Object> map = new HashMap<>(2);
+        map.put(BANNER_ID, bannerSortDTO.getId());
+        map.put(SORT, bannerSortDTO.getSort());
+        return Result.success(map);
     }
 }

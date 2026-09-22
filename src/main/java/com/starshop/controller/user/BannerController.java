@@ -1,6 +1,7 @@
 package com.starshop.controller.user;
 
 import com.starshop.pojo.dto.BannerDTO;
+import com.starshop.pojo.dto.BannerSortDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.result.Result;
 import com.starshop.service.BannerService;
@@ -60,5 +61,15 @@ public class BannerController {
     @DeleteMapping("/admin/banner/delete")
     public Result deleteBanner(@RequestParam Long id) {
         return bannerService.deleteBanner(id);
+    }
+
+    /**
+     * 更新 Banner 排序
+     * @param bannerSortDTO
+     * @return
+     */
+    @PutMapping("/admin/banner/updateSort")
+    public Result updateSort(@RequestBody BannerSortDTO bannerSortDTO) {
+        return bannerService.updateSort(bannerSortDTO);
     }
 }

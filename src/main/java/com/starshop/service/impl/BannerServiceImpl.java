@@ -32,4 +32,20 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
         }
         return Result.success(banner);
     }
+
+    /**
+     * admin 修改 banner
+     * @param bannerDTO
+     * @return
+     */
+    @Override
+    @RemoveBannerRedisCacheAnnotation
+    public Result updateBanner(BannerDTO bannerDTO) {
+        Banner banner = copyMapper.bannerDTOToBanner(bannerDTO);
+        boolean isSuccess = updateById(banner);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.TOM_CAT_ERROR);
+        }
+        return Result.success(banner);
+    }
 }

@@ -30,12 +30,6 @@ public interface CopyMapper {
 
     Category categoryDTOToCategory(CategoryDTO categoryDTO);
 
-    /**
-     * Product → ProductDocument
-     */
-    @Mapping(target = "status", expression = "java(product.getStatus() != null ? product.getStatus().getNumber() : 1)")
-    ProductDocument productToDocument(Product product);
-
     @Mapping(source = "id" , target = "id")
     SimpleProductVO productToSimpleProductVO(Product product);
 

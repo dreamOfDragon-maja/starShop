@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 public class BannerDTO {
 
+    private String id;
+
     /**
      * 标题
      */

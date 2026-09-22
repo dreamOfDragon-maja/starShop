@@ -12,4 +12,11 @@ public interface BannerService extends IService<Banner> {
      * @return
      */
     Result addBanner(BannerDTO bannerDTO);
+
+    /**
+     * admin 修改 banner
+     * @param bannerDTO
+     * @return
+     */
+    Result updateBanner(BannerDTO bannerDTO);
 }

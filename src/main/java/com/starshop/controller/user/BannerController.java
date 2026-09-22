@@ -31,4 +31,14 @@ public class BannerController {
     public Result updateBanner(@RequestBody BannerDTO bannerDTO) {
         return bannerService.updateBanner(bannerDTO);
     }
+
+    /**
+     * admin 删除 banner
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/admin/banner/delete")
+    public Result deleteBanner(@RequestParam Long id) {
+        return bannerService.deleteBanner(id);
+    }
 }

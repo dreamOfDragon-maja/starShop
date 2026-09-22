@@ -19,4 +19,11 @@ public interface BannerService extends IService<Banner> {
      * @return
      */
     Result updateBanner(BannerDTO bannerDTO);
+
+    /**
+     * admin 删除 banner
+     * @param id
+     * @return
+     */
+    Result deleteBanner(Long id);
 }

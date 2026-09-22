@@ -12,11 +12,15 @@ import com.starshop.service.BannerService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+
 @Service
 public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> implements BannerService {
 
     @Resource
     private CopyMapper copyMapper;
+
+    private static final String DELETE_ID = "deleteId";
 
     /**
      * admin 添加 banner
@@ -47,5 +51,22 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
             return Result.error(MessageConstant.TOM_CAT_ERROR);
         }
         return Result.success(banner);
+    }
+
+    /**
+     * admin 删除 banner
+     * @param id
+     * @return
+     */
+    @Override
+    @RemoveBannerRedisCacheAnnotation
+    public Result deleteBanner(Long id) {
+        boolean isSuccess = removeById(id);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.DELETE_ERROR);
+        }
+        HashMap<String, Object> resultMap = new HashMap<>(1);
+        resultMap.put(DELETE_ID, id);
+        return Result.success(resultMap);
     }
 }

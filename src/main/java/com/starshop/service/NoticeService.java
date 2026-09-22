@@ -27,4 +27,11 @@ public interface NoticeService extends IService<Notice> {
      * @return
      */
     Result updateNotice(NoticeDTO noticeDTO);
+
+    /**
+     * 根据指定 id删除通知
+     * @param id
+     * @return
+     */
+    Result deleteNotice(String id);
 }

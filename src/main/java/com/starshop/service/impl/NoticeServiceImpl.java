@@ -65,4 +65,18 @@ public class NoticeServiceImpl extends  ServiceImpl<NoticeMapper, Notice> implem
         }
         return Result.success(notice);
     }
+
+    /**
+     * 根据指定 id删除通知
+     * @param id
+     * @return
+     */
+    @Override
+    public Result deleteNotice(String id) {
+        boolean isSuccess = removeById(id);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.DELETE_ERROR);
+        }
+        return Result.success(id);
+    }
 }

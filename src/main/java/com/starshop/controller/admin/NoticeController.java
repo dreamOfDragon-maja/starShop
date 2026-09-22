@@ -41,4 +41,14 @@ public class NoticeController {
     public Result updateNotice(@RequestBody NoticeDTO noticeDTO) {
         return noticeService.updateNotice(noticeDTO);
     }
+
+    /**
+     * 根据指定 id删除通知
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/admin/notice/delete")
+    public Result deleteNotice(@RequestParam String id){
+        return noticeService.deleteNotice(id);
+    }
 }

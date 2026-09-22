@@ -1,6 +1,7 @@
 package com.starshop.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starshop.common.annotation.business.RemoveBannerRedisCacheAnnotation;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.constant.MessageConstant;
 import com.starshop.mapper.BannerMapper;
@@ -22,6 +23,7 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
      * @return
      */
     @Override
+    @RemoveBannerRedisCacheAnnotation
     public Result addBanner(BannerDTO bannerDTO) {
         Banner banner = copyMapper.bannerDTOToBanner(bannerDTO);
         boolean isSuccess = save(banner);

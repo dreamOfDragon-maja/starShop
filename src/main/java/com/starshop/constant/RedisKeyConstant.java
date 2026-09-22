@@ -62,4 +62,10 @@ public class RedisKeyConstant {
     public static final String AFTER_RECEIVE_TIME_IN_PROGRESS = "afterReceiveTimeInProgress";
     public static final String USE_STATUS = "useStatus:";
 
+    /**
+     * 联播图模块
+     */
+    public static final String PREFIX_BANNER = "banner:";
+    public static final String ALL = "all";
+
 }

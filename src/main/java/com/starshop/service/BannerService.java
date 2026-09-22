@@ -33,4 +33,11 @@ public interface BannerService extends IService<Banner> {
      * 用于 admin 获取联播图列表
      */
     Result<List<Banner>> getBannerListAdmin();
+
+    /**
+     * 获取首页联播图列表
+     * @return
+     */
+    Result<List<Banner>> getBannerList();
+
 }

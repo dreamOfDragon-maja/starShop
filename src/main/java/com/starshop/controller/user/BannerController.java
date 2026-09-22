@@ -17,6 +17,15 @@ public class BannerController {
     private BannerService bannerService;
 
     /**
+     * 获取首页联播图列表
+     * @return
+     */
+    @GetMapping("/banner/list")
+    public Result<List<Banner>> getBannerList(){
+        return bannerService.getBannerList();
+    }
+
+    /**
      * 用于 admin 获取联播图列表
      */
     @GetMapping("/admin/banner/list")

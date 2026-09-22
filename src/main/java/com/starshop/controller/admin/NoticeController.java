@@ -4,10 +4,7 @@ import com.starshop.pojo.dto.NoticeDTO;
 import com.starshop.result.Result;
 import com.starshop.service.NoticeService;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -23,5 +20,15 @@ public class NoticeController {
     @PostMapping("/admin/notice/add")
     public Result addNotice(@RequestBody NoticeDTO noticeDTO) {
         return noticeService.addNotice(noticeDTO);
+    }
+
+    /**
+     * 获取最新 notice
+     * @param limit
+     * @return
+     */
+    @GetMapping("/notice/latest")
+    public Result getLatestNotice(@RequestParam(value = "limit", defaultValue = "5") Integer limit) {
+        return noticeService.getLatestNotice(limit);
     }
 }

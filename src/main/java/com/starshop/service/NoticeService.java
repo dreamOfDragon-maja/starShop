@@ -12,4 +12,12 @@ public interface NoticeService extends IService<Notice> {
      * @return
      */
     Result addNotice(NoticeDTO noticeDTO);
+
+
+    /**
+     * 获取最新 notice
+     * @param limit
+     * @return
+     */
+    Result getLatestNotice(Integer limit);
 }

@@ -63,4 +63,6 @@ public interface CopyMapper {
 
     Notice noticeDTOToNotice(NoticeDTO noticeDTO);
 
+    Banner bannerDTOToBanner(BannerDTO bannerDTO);
+
 }

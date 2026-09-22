@@ -61,4 +61,6 @@ public interface CopyMapper {
 
     FactoryInfoVO factoryInfoToFactoryInfoVO(FactoryInfo factoryInfo);
 
+    Notice noticeDTOToNotice(NoticeDTO noticeDTO);
+
 }

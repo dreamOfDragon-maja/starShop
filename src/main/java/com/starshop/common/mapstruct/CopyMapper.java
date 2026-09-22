@@ -59,4 +59,6 @@ public interface CopyMapper {
 
     Coupon couponCreateDTOToCoupon(CouponCreateDTO couponCreateDTO);
 
+    FactoryInfoVO factoryInfoToFactoryInfoVO(FactoryInfo factoryInfo);
+
 }

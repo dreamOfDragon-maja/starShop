@@ -3,6 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.BannerDTO;
 import com.starshop.pojo.dto.BannerSortDTO;
+import com.starshop.pojo.dto.BannerStatusDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.result.Result;
 
@@ -47,4 +48,10 @@ public interface BannerService extends IService<Banner> {
      * @return
      */
     Result updateSort(BannerSortDTO bannerSortDTO);
+
+    /**
+     * 更新 banner 状态
+     * @return
+     */
+    Result updateStatus(BannerStatusDTO bannerStatusDTO);
 }

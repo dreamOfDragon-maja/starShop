@@ -2,6 +2,7 @@ package com.starshop.controller.user;
 
 import com.starshop.pojo.dto.BannerDTO;
 import com.starshop.pojo.dto.BannerSortDTO;
+import com.starshop.pojo.dto.BannerStatusDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.result.Result;
 import com.starshop.service.BannerService;
@@ -71,5 +72,14 @@ public class BannerController {
     @PutMapping("/admin/banner/updateSort")
     public Result updateSort(@RequestBody BannerSortDTO bannerSortDTO) {
         return bannerService.updateSort(bannerSortDTO);
+    }
+
+    /**
+     * 更新 banner 状态
+     * @return
+     */
+    @PutMapping("/admin/banner/updateStatus")
+    public Result updateStatus(@RequestBody BannerStatusDTO bannerStatusDTO) {
+        return bannerService.updateStatus(bannerStatusDTO);
     }
 }

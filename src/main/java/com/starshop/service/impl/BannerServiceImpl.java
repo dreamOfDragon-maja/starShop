@@ -9,6 +9,7 @@ import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.BannerMapper;
 import com.starshop.pojo.dto.BannerDTO;
 import com.starshop.pojo.dto.BannerSortDTO;
+import com.starshop.pojo.dto.BannerStatusDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.pojo.enums.BannerStatus;
 import com.starshop.result.Result;
@@ -30,6 +31,7 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
     private static final String DELETE_ID = "deleteId";
     private static final String BANNER_ID = "bannerId";
     private static final String SORT = "sort";
+    private static final String STATUS = "status";
 
     /**
      * 获取首页联播图列表
@@ -122,11 +124,27 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
      * @return
      */
     @Override
+    @RemoveBannerRedisCacheAnnotation
     public Result updateSort(BannerSortDTO bannerSortDTO) {
         lambdaUpdate().set(Banner::getSort, bannerSortDTO.getSort()).eq(Banner::getId, bannerSortDTO.getId()).update();
         HashMap<String, Object> map = new HashMap<>(2);
         map.put(BANNER_ID, bannerSortDTO.getId());
         map.put(SORT, bannerSortDTO.getSort());
+        return Result.success(map);
+    }
+
+    /**
+     * 更新 banner 状态
+     * @return
+     */
+    @Override
+    @RemoveBannerRedisCacheAnnotation
+    public Result updateStatus(BannerStatusDTO bannerStatusDTO) {
+        lambdaUpdate().set(Banner::getStatus, bannerStatusDTO.getStatus().getNumber())
+                .eq(Banner::getId, bannerStatusDTO.getId()).update();
+        HashMap<String, Object> map = new HashMap<>(2);
+        map.put(BANNER_ID, bannerStatusDTO.getId());
+        map.put(STATUS, bannerStatusDTO.getStatus().getValue());
         return Result.success(map);
     }
 }

@@ -47,4 +47,22 @@ public class NoticeServiceImpl extends  ServiceImpl<NoticeMapper, Notice> implem
                 .page(new Page<>(1, limit)).getRecords();
         return Result.success(list);
     }
+
+    /**
+     * 更新通知
+     * @param noticeDTO
+     * @return
+     */
+    @Override
+    public Result updateNotice(NoticeDTO noticeDTO) {
+        if (noticeDTO.getId() == null) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        Notice notice = copyMapper.noticeDTOToNotice(noticeDTO);
+        boolean isSuccess = updateById(notice);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.TOM_CAT_ERROR);
+        }
+        return Result.success(notice);
+    }
 }

@@ -31,4 +31,14 @@ public class NoticeController {
     public Result getLatestNotice(@RequestParam(value = "limit", defaultValue = "5") Integer limit) {
         return noticeService.getLatestNotice(limit);
     }
+
+    /**
+     * 更新通知
+     * @param noticeDTO
+     * @return
+     */
+    @PutMapping("/admin/notice/update")
+    public Result updateNotice(@RequestBody NoticeDTO noticeDTO) {
+        return noticeService.updateNotice(noticeDTO);
+    }
 }

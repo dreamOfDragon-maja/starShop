@@ -5,6 +5,8 @@ import com.starshop.pojo.dto.BannerDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.result.Result;
 
+import java.util.List;
+
 public interface BannerService extends IService<Banner> {
 
     /**
@@ -26,4 +28,9 @@ public interface BannerService extends IService<Banner> {
      * @return
      */
     Result deleteBanner(Long id);
+
+    /**
+     * 用于 admin 获取联播图列表
+     */
+    Result<List<Banner>> getBannerListAdmin();
 }

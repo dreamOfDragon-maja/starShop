@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> implements BannerService {
@@ -21,6 +22,15 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
     private CopyMapper copyMapper;
 
     private static final String DELETE_ID = "deleteId";
+
+    /**
+     * 用于 admin 获取联播图列表
+     */
+    @Override
+    public Result<List<Banner>> getBannerListAdmin() {
+        List<Banner> bannerList = lambdaQuery().orderByAsc(Banner::getSort).list();
+        return Result.success(bannerList);
+    }
 
     /**
      * admin 添加 banner

@@ -1,10 +1,13 @@
 package com.starshop.controller.user;
 
+import com.starshop.common.result.SimpleCursorCommonEntity;
+import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
@@ -57,5 +60,15 @@ public class UserController {
     @DeleteMapping("/collect/delete")
     public Result deleteCollection(@RequestParam String productIds) {
         return collectionService.deleteCollection(productIds);
+    }
+
+    /**
+     * 获取用户收藏商品列表
+     * @param simpleCursorCommonEntity 简单查询请求参数
+     * @return 简单商品封装列表
+     */
+    @GetMapping("/collect/list")
+    public Result<SimpleCursorCommonResult>getCollectionList(@Valid SimpleCursorCommonEntity simpleCursorCommonEntity) {
+        return collectionService.getCollectionList(simpleCursorCommonEntity);
     }
 }

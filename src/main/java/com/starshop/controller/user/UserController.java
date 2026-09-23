@@ -5,6 +5,7 @@ import com.starshop.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,5 +36,15 @@ public class UserController {
     @PutMapping("/detail/update")
     public Result updateUserDetail(@RequestBody @NotNull UserDetailDTO userDetailDTO) {
         return userService.updateUserDetail(userDetailDTO);
+    }
+
+    /**
+     * 新增收藏
+     * @param productId
+     * @return
+     */
+    @PostMapping("/collect/add")
+    public Result addCollection(@RequestParam @NotBlank String productId) {
+        return collectionService.addCollection(productId);
     }
 }

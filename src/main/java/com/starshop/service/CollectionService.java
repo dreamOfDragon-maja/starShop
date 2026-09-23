@@ -13,4 +13,12 @@ public interface CollectionService extends IService<ProductCollection> {
      * @return
      */
     Result addCollection(@NotBlank String productId);
+
+    /**
+     * 删除收藏
+     * 支持单个或批量删除收藏的商品（商品ID以逗号分隔）
+     * @param productIds
+     * @return
+     */
+    Result deleteCollection(String productIds);
 }

@@ -47,4 +47,15 @@ public class UserController {
     public Result addCollection(@RequestParam @NotBlank String productId) {
         return collectionService.addCollection(productId);
     }
+
+    /**
+     * 删除收藏
+     * 支持单个或批量删除收藏的商品（商品ID以逗号分隔）
+     * @param productIds
+     * @return
+     */
+    @DeleteMapping("/collect/delete")
+    public Result deleteCollection(@RequestParam String productIds) {
+        return collectionService.deleteCollection(productIds);
+    }
 }

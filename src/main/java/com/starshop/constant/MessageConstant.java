@@ -28,6 +28,7 @@ public class MessageConstant {
     public static final String CART_NOT_EXIST_ERROR = "删除的购物车不存在";
     public static final String DELETE_ERROR = "删除失败,请重试";
     public static final String USER_NAME_NOT_NULL = "用户名不能为空";
+    public static final String CONTENT_NOT_EXIST_ERROR = "删除的内容不存在";
 
 
 }

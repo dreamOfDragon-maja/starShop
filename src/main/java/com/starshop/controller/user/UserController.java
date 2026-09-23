@@ -1,12 +1,12 @@
 package com.starshop.controller.user;
 
+import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -25,5 +25,15 @@ public class UserController {
     @GetMapping("/detail/get")
     public Result getUserDetail() {
         return userService.getUserDetail();
+    }
+
+    /**
+     * 更改用户详情
+     * @param userDetailDTO
+     * @return
+     */
+    @PutMapping("/detail/update")
+    public Result updateUserDetail(@RequestBody @NotNull UserDetailDTO userDetailDTO) {
+        return userService.updateUserDetail(userDetailDTO);
     }
 }

@@ -59,4 +59,6 @@ public interface CopyMapper {
 
     Banner bannerDTOToBanner(BannerDTO bannerDTO);
 
+    UserDetailVO sysUserToUserDetailVO(SysUser sysUser);
+
 }

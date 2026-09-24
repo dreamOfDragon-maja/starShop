@@ -6,15 +6,27 @@ import com.starshop.mapper.ChatMessageMapper;
 import com.starshop.mapper.ChatSessionMapper;
 import com.starshop.pojo.entity.ChatMessage;
 import com.starshop.pojo.entity.ChatSession;
+import com.starshop.pojo.vo.ChatSessionVO;
 import com.starshop.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage> implements ChatService {
 
     private final ChatSessionMapper chatSessionMapper;
+
+    /**
+     * 获取当前用户的会话列表
+     * @return
+     */
+    @Override
+    public List<ChatSessionVO> getSessionList(Long userId) {
+        return chatSessionMapper.selectSessionList(userId);
+    }
 
     /**
      * 清除未读数

@@ -4,4 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.entity.ChatMessage;
 
 public interface ChatService extends IService<ChatMessage> {
+
+    /**
+     * 清除未读数
+     */
+    void clearUnread(Long userId, Long contactId);
 }

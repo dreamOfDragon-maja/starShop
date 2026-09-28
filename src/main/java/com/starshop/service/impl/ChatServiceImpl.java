@@ -1,6 +1,8 @@
 package com.starshop.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.mapper.ChatMessageMapper;
 import com.starshop.mapper.ChatSessionMapper;
@@ -26,6 +28,20 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     @Override
     public List<ChatSessionVO> getSessionList(Long userId) {
         return chatSessionMapper.selectSessionList(userId);
+    }
+
+    /**
+     * 分页获取历史消息
+     */
+    @Override
+    public Page<ChatMessage> getChatHistory(Long userId, Long contactId, Integer page, Integer size) {
+        Page<ChatMessage> chatPage = new Page<>(page, size);
+        return this.page(chatPage,new LambdaQueryWrapper<ChatMessage>()
+                .and(wrapper -> wrapper
+                        .eq(ChatMessage::getFromUserId,userId).eq(ChatMessage::getToUserId,contactId)
+                        .or()
+                        .eq(ChatMessage::getFromUserId,contactId).eq(ChatMessage::getToUserId,userId)
+                        .orderByDesc(ChatMessage::getCreateTime)));
     }
 
     /**

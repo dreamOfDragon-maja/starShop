@@ -1,6 +1,9 @@
 package com.starshop.controller.user;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.starshop.common.result.PageResult;
 import com.starshop.context.BaseContext;
+import com.starshop.pojo.entity.ChatMessage;
 import com.starshop.pojo.vo.ChatSessionVO;
 import com.starshop.result.Result;
 import com.starshop.service.ChatService;
@@ -40,5 +43,27 @@ public class ChatController {
         Long userId = Long.valueOf(BaseContext.getUserId());
         chatService.clearUnread(userId, contactId);
         return Result.success();
+    }
+
+    /**
+     * 分页获取与某人的聊天记录
+     * @return
+     */
+    @GetMapping("/history/{contactId}")
+    public Result<PageResult> getChatHistory(
+            @PathVariable Long contactId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size){
+        Long userId = Long.valueOf(BaseContext.getUserId());
+        Page<ChatMessage> chatMessagePage = chatService.getChatHistory(userId,contactId,page,size);
+
+        PageResult result = PageResult.builder()
+                .list(chatMessagePage.getRecords())
+                .total(chatMessagePage.getTotal())
+                .pageNum(page)
+                .pageSize(size)
+                .build();
+
+        return Result.success(result);
     }
 }

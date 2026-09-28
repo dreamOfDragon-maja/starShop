@@ -1,5 +1,6 @@
 package com.starshop.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.entity.ChatMessage;
 import com.starshop.pojo.vo.ChatSessionVO;
@@ -18,4 +19,9 @@ public interface ChatService extends IService<ChatMessage> {
      * @return
      */
     List<ChatSessionVO> getSessionList(Long userId);
+
+    /**
+     * 分页获取历史消息
+     */
+    Page<ChatMessage> getChatHistory(Long userId, Long contactId, Integer page, Integer size);
 }

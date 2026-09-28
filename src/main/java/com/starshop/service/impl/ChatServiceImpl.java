@@ -101,8 +101,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                 .and(wrapper -> wrapper
                         .eq(ChatMessage::getFromUserId,userId).eq(ChatMessage::getToUserId,contactId)
                         .or()
-                        .eq(ChatMessage::getFromUserId,contactId).eq(ChatMessage::getToUserId,userId)
-                        .orderByDesc(ChatMessage::getCreateTime)));
+                        .eq(ChatMessage::getFromUserId,contactId).eq(ChatMessage::getToUserId,userId))
+                .orderByDesc(ChatMessage::getCreateTime));
     }
 
     /**

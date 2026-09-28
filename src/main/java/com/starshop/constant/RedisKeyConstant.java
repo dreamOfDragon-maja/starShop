@@ -68,4 +68,10 @@ public class RedisKeyConstant {
     public static final String PREFIX_BANNER = "banner:";
     public static final String ALL = "all";
 
+    /**
+     * 订单模块
+     */
+    public static final String PREFIX_ORDER = "order:";
+    public static final String ORDER_NO = "orderNo:";
+
 }

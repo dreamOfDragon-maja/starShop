@@ -1,5 +1,7 @@
 package com.starshop.infrastructure.netty;
 
+import com.starshop.infrastructure.netty.handle.ChatHandler;
+import com.starshop.infrastructure.netty.handle.JwtAuthHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -29,6 +31,9 @@ public class ChatNettyServer {
 
     @Value("${netty.port}")
     private int port;
+
+    private final JwtAuthHandler jwtAuthHandler;
+    private final ChatHandler chatHandler;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;

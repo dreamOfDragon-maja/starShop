@@ -61,4 +61,10 @@ public interface CopyMapper {
 
     UserDetailVO sysUserToUserDetailVO(SysUser sysUser);
 
+    Order orderDTOToOrder(OrderDTO orderDTO);
+
+    OrderItem orderItemDTOToOrderItem(OrderItemDTO orderItemDTO);
+
+    OrderWithItemVO orderToOrderWithItemVO(Order order);
+
 }

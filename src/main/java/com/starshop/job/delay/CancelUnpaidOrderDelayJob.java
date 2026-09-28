@@ -28,6 +28,7 @@ public class CancelUnpaidOrderDelayJob {
     private RedisCacheTtlProperties redisCacheTtlProperties;
 
     @Qualifier("cancelUnpaidOrderExecutor")
+    @Resource
     private Executor threadPool;
 
     @Resource

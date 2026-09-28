@@ -24,4 +24,9 @@ public interface ChatService extends IService<ChatMessage> {
      * 分页获取历史消息
      */
     Page<ChatMessage> getChatHistory(Long userId, Long contactId, Integer page, Integer size);
+
+    /**
+     * 发送并持久化消息
+     */
+    ChatMessage saveAndGetMessage(Long fromUserId, Long toUserId, String content, Integer msgType, Long productId);
 }

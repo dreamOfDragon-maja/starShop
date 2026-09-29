@@ -20,6 +20,8 @@ import com.starshop.exception.EmptyObjectException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.infrastructure.redis.generator.RedisMessageGenerator;
+import com.starshop.infrastructure.rocketmq.constant.order.MqOrderConstant;
+import com.starshop.infrastructure.rocketmq.consumer.order.OrderStatusConsumer;
 import com.starshop.mapper.ProductCommentAppendMapper;
 import com.starshop.mapper.ProductCommentLikeMapper;
 import com.starshop.mapper.ProductCommentMapper;
@@ -29,6 +31,7 @@ import com.starshop.pojo.dto.SecondProductCommentDTO;
 import com.starshop.pojo.entity.ProductComment;
 import com.starshop.pojo.entity.ProductCommentAppend;
 import com.starshop.pojo.entity.ProductCommentLike;
+import com.starshop.pojo.enums.OrderStatusEnum;
 import com.starshop.pojo.enums.ProductCommentQuerySortTypeEnum;
 import com.starshop.pojo.vo.ProductAppendCommentVO;
 import com.starshop.properties.RedisCacheTtlProperties;
@@ -36,6 +39,7 @@ import com.starshop.common.result.Result;
 import com.starshop.service.ProductCommentService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +66,8 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
     private final ProductCommentAppendMapper productCommentAppendMapper;
     
     private final MyBatisBatchExecutor myBatisBatchExecutor;
+
+    private final RocketMQTemplate rocketMQTemplate;
 
     private final static String emptyProductCommentCount = "-1";
 
@@ -245,8 +251,12 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
         if (!isSuccess) {
             return Result.error(MessageConstant.TOM_CAT_ERROR);
         }
-        //TODO后续使用rocketmq修改订单状态为已评价
-
+        //使用rocketmq修改订单状态为已评价
+        String destination = MqOrderConstant.TOPIC_ORDER + ":" + MqOrderConstant.TAG_ORDER_STATUS;
+        HashMap<String, Object> mqMessageMap = new HashMap<>(2);
+        mqMessageMap.put(OrderStatusConsumer.ORDER_NO, firstProductCommentDTO.getOrderNo());
+        mqMessageMap.put(OrderStatusConsumer.ORDER_STATUS_ENUM, OrderStatusEnum.EVALUATED.getValue());
+        rocketMQTemplate.convertAndSend(destination, mqMessageMap);
         //删除redis中缓存的评论点赞数
         String productId = firstProductCommentDTO.getProductId();
         String key = RedisKeyConstant.PREFIX_PRODUCT + productId + ":" + RedisKeyConstant.COMMENT_COUNT;
@@ -353,7 +363,12 @@ public class ProductCommentServiceImpl extends ServiceImpl<ProductCommentMapper,
             return null;
         });
         RedisConnector.delete(firstCommentKey);
-        //TODO后续使用rocketmq修改订单状态为已追评
+        //使用rocketmq修改订单状态为已追评
+        String destination = MqOrderConstant.TOPIC_ORDER + ":" + MqOrderConstant.TAG_ORDER_STATUS;
+        HashMap<String, Object> mqMessageMap = new HashMap<>(2);
+        mqMessageMap.put(OrderStatusConsumer.ORDER_NO, appendProductFirstCommentDTO.getOrderNo());
+        mqMessageMap.put(OrderStatusConsumer.ORDER_STATUS_ENUM, OrderStatusEnum.REVIEWED.getValue());
+        rocketMQTemplate.convertAndSend(destination, mqMessageMap);
         return Result.success();
     }
 

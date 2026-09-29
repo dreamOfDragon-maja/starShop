@@ -5,6 +5,7 @@ import com.starshop.common.result.UserInfo;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
+import com.starshop.pojo.dto.UserDTO;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
@@ -36,13 +37,13 @@ public class LoginController {
 
     /**
      * 用户登录
-     * @param userLoginDTO
+     * @param userDTO
      * @return
      */
     @PostMapping("/login/account")
-    public Result<Object> login(@RequestBody @Validated UserLoginDTO userLoginDTO) throws Exception {
-        log.info("用户登录{}",userLoginDTO);
-        return loginService.login(userLoginDTO);
+    public Result<Object> login(@RequestBody @Validated UserDTO userDTO) throws Exception {
+        log.info("用户登录{}",userDTO);
+        return loginService.login(userDTO);
     }
 
     /**

@@ -14,6 +14,7 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.UserMapper;
+import com.starshop.pojo.dto.UserDTO;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
@@ -247,19 +248,19 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
 
     /**
      * 用户登录
-     * @param userLoginDTO
+     * @param userDTO
      * @return
      */
     @Override
-    public Result<Object> login(UserLoginDTO userLoginDTO) throws Exception {
+    public Result<Object> login(UserDTO userDTO) throws Exception {
         //1.查询用户
-        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userLoginDTO.getUsername()).one();
+        SysUser sysUser = lambdaQuery().eq(SysUser::getUsername, userDTO.getUsername()).one();
         //2.如果不存在，抛出异常
         if (sysUser == null) {
             throw new Exception(MessageConstant.USER_NOT_EXISTS);
         }
         //3.存在，查询数据库校验是否正确
-        if (!BCrypt.checkpw(userLoginDTO.getPassword(), sysUser.getPassword())) {
+        if (!BCrypt.checkpw(userDTO.getPassword(), sysUser.getPassword())) {
             throw new Exception(MessageConstant.PASSWORD_ERROR);
         }
         //4.信息正确则生成accessToken

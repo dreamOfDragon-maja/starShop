@@ -2,6 +2,7 @@ package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.common.result.UserInfo;
+import com.starshop.pojo.dto.UserDTO;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
@@ -34,10 +35,10 @@ public interface LoginService extends IService<SysUser> {
 
     /**
      * 用户登录
-     * @param userLoginDTO
+     * @param userDTO
      * @return
      */
-    Result<Object> login(UserLoginDTO userLoginDTO) throws Exception;
+    Result<Object> login(UserDTO userDTO) throws Exception;
 
     /**
      * 刷新token

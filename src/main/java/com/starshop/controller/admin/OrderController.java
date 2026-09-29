@@ -129,4 +129,14 @@ public class OrderController {
     public Result getOrderByScrollQuery(@RequestParam @NotNull Long beginId) {
         return orderService.getOrderByScrollQuery(beginId);
     }
+
+    /**
+     * 条件搜索订单,前端传字符串,后端判断类型
+     * @param searchCondition
+     * @return
+     */
+    @GetMapping("/search")
+    public Result searchOrderByCondition(@RequestParam @NotBlank String searchCondition) {
+        return orderService.searchOrderByCondition(searchCondition);
+    }
 }

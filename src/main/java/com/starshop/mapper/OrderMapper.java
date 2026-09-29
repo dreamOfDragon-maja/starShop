@@ -19,4 +19,6 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Order getOrderLogistics(String orderNo);
 
+    List<Order> searchOrderByCondition(String orderNo, String logisticsNo, String productName, String userId);
+
 }

@@ -14,6 +14,7 @@ import com.starshop.common.utils.SessionUtils;
 import com.starshop.constant.DataConstant;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
+import com.starshop.constant.RegexConstants;
 import com.starshop.context.BaseContext;
 import com.starshop.exception.PayException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
@@ -397,5 +398,35 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         Long endId = list.get(list.size() - 1).getId();
         return Result.success(ScrollQueryResult.builder().list(list).endId(endId).build());
+    }
+
+    /**
+     * 条件搜索订单,前端传字符串,后端判断类型
+     * @param searchCondition
+     * @return
+     */
+    @Override
+    public Result searchOrderByCondition(String searchCondition) {
+        String userId = BaseContext.getUserId();
+        String orderNo = null;
+        String logisticsNo = null;
+        String productName = null;
+        //判断是哪种类型的查询
+        if (RegexConstants.isOrderNo(searchCondition)) {
+            orderNo = searchCondition;
+        } else if (RegexConstants.isLogisticsNo(searchCondition)) {
+            logisticsNo = searchCondition;
+        } else {
+            productName = searchCondition;
+
+        }
+        List<Order> orderList = orderMapper.searchOrderByCondition(orderNo, logisticsNo, productName, userId);
+        if (orderList.isEmpty()) {
+            return Result.success();
+        }
+
+        List<OrderWithItemVO> orderWithItemVOs = orderList.stream()
+                .map(order -> copyMapper.orderToOrderWithItemVO(order)).toList();
+        return Result.success(orderWithItemVOs);
     }
 }

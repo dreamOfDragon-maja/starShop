@@ -110,4 +110,14 @@ public class OrderController {
         return orderService.getOrderFreight(productIds, addressId);
     }
 
+    /**
+     * 获取物流信息
+     * @param orderNo
+     * @return
+     */
+    @GetMapping("/logistics")
+    public Result getOrderLogistics(@RequestParam @NotBlank String orderNo) {
+        return orderService.getOrderLogistics(orderNo);
+    }
+
 }

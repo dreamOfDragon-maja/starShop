@@ -73,4 +73,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result getOrderFreight(@NotBlank String productIds, @NotBlank String addressId);
+
+    /**
+     * 获取物流信息
+     * @param orderNo
+     * @return
+     */
+    Result getOrderLogistics(@NotBlank String orderNo);
 }

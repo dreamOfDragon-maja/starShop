@@ -28,6 +28,7 @@ import com.starshop.pojo.enums.OrderPageEnum;
 import com.starshop.pojo.enums.OrderStatusEnum;
 import com.starshop.pojo.enums.PayTypeEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
+import com.starshop.pojo.vo.OrderWithTrackingVO;
 import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
 import com.starshop.service.AddressService;
@@ -353,5 +354,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         map.put(Order.Fields.freight, freight);
         map.put(PRODUCT_IDS, productIdsArray);
         return Result.success(map);
+    }
+
+    /**
+     * 获取物流信息
+     * @param orderNo
+     * @return
+     */
+    @Override
+    public Result getOrderLogistics(String orderNo) {
+        Order order = orderMapper.getOrderLogistics(orderNo);
+        if (Objects.isNull(order)) {
+            return Result.error(MessageConstant.ORDER_NOT_FOUND);
+        }
+        OrderWithTrackingVO orderWithTrackingVO = copyMapper.orderToOrderWithTrackingVO(order);
+        return Result.success(orderWithTrackingVO);
     }
 }

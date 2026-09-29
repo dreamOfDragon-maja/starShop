@@ -67,4 +67,7 @@ public interface CopyMapper {
 
     OrderWithItemVO orderToOrderWithItemVO(Order order);
 
+    @Mapping(source = "id", target = "orderId")
+    OrderWithTrackingVO orderToOrderWithTrackingVO(Order order);
+
 }

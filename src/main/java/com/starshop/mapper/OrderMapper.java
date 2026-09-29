@@ -17,4 +17,6 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Order getOrderDesc(String orderNo);
 
+    Order getOrderLogistics(String orderNo);
+
 }

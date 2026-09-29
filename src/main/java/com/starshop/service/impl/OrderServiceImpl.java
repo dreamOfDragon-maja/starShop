@@ -14,6 +14,7 @@ import com.starshop.constant.DataConstant;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
+import com.starshop.exception.PayException;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.job.delay.CancelUnpaidOrderDelayJob;
 import com.starshop.mapper.OrderMapper;
@@ -23,6 +24,7 @@ import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.OrderItem;
 import com.starshop.pojo.enums.OrderPageEnum;
 import com.starshop.pojo.enums.OrderStatusEnum;
+import com.starshop.pojo.enums.PayTypeEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
 import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +66,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private RedisCacheTtlProperties redisCacheTtlProperties;
 
     private static final Order emptyOrder = Order.builder().id(DataConstant.ZERO_LONG).build();
+    private static final String IS_SUCCESS = "isSuccess";
+    private static final String TRY_NUM = "tryNum";
 
     /**
      * 创建订单
@@ -212,5 +217,62 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 .set(Order::getStatus, OrderStatusEnum.CANCELLED.getCode())
                 .set(Order::getCancelTime, now)
                 .set(Order::getCancelReason, cancelReason).update();
+    }
+
+    /**
+     * 支付成功订单,如果五次失败,使用线程池异步进行更新
+     * @param orderNo
+     * @return
+     */
+    @Override
+    @RemoveOrderSessionAnnotation
+    @RemoveOrderDetailRedisCacheAnnotation
+    public Result paySuccessOrder(String orderNo) {
+        //在延迟队列中移除订单号
+        cancelUnpaidOrderDelayJob.setPaidOrderNoToCancelDelayQueue(orderNo);
+
+        int tryNum = 0;
+        Map<String, Object> map = new HashMap<>(2);
+        //更新订单状态
+        updateOrderPayIsSuccess(map, orderNo, tryNum);
+        boolean isSuccess = (boolean) map.get(IS_SUCCESS);
+        tryNum = (int) map.get(TRY_NUM);
+        //不成功继续更新
+        while (!isSuccess) {
+            Map<String, Object> nextMap = updateOrderPayIsSuccess(map, orderNo, tryNum);
+            tryNum = (int) nextMap.get(TRY_NUM);
+            isSuccess = (boolean) nextMap.get(IS_SUCCESS);
+
+        }
+        Map<String, Object> resultMap = new HashMap<>(2);
+        resultMap.put(Order.Fields.orderNo, orderNo);
+        resultMap.put(Order.Fields.status, OrderStatusEnum.PENDING_SHIPMENT.getValue());
+        return Result.success(resultMap);
+
+    }
+
+    /**
+     * 更新订单支付状态，尝试次数超过5次，线程池异步进行更新
+     * @param map
+     * @param orderNo
+     * @param tryNum
+     * @return
+     */
+    private Map<String, Object> updateOrderPayIsSuccess(Map<String, Object> map, String orderNo, int tryNum) {
+        if (tryNum == 5) {
+            //异步更新
+            throw new PayException(orderNo);
+
+        }
+        boolean isSuccess = lambdaUpdate().eq(Order::getOrderNo, orderNo)
+                .set(Order::getStatus, OrderStatusEnum.PENDING_SHIPMENT)
+                .set(Order::getPayType, PayTypeEnum.WECHAT_PAY)
+                .set(Order::getPayTime, LocalDateTime.now())
+                .update();
+        //每次更新后尝试次数加一
+        tryNum++;
+        map.put(IS_SUCCESS, isSuccess);
+        map.put(TRY_NUM, tryNum);
+        return map;
     }
 }

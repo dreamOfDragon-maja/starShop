@@ -44,4 +44,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result cancelOrder(@NotBlank String orderNo, String cancelReason);
+
+    /**
+     * 支付成功订单
+     * @param orderNo
+     * @return
+     */
+    Result paySuccessOrder(@NotBlank String orderNo);
 }

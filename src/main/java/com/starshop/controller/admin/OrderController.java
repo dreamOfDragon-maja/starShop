@@ -68,4 +68,14 @@ public class OrderController {
     public Result cancelOrder(@RequestParam @NotBlank String orderNo, String cancelReason) {
         return orderService.cancelOrder(orderNo, cancelReason);
     }
+
+    /**
+     * 支付成功订单
+     * @param orderNo
+     * @return
+     */
+    @PutMapping("/pay/success")
+    public Result paySuccessOrder(@RequestParam @NotBlank String orderNo){
+        return orderService.paySuccessOrder(orderNo);
+    }
 }

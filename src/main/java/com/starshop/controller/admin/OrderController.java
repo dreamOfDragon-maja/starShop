@@ -58,4 +58,14 @@ public class OrderController {
     public Result getOrderDesc(@RequestParam @NotBlank String orderNo) {
         return orderService.getOrderDesc(orderNo);
     }
+
+    /**
+     * 取消订单
+     * @param orderNo
+     * @return
+     */
+    @PutMapping("/cancel")
+    public Result cancelOrder(@RequestParam @NotBlank String orderNo, String cancelReason) {
+        return orderService.cancelOrder(orderNo, cancelReason);
+    }
 }

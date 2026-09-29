@@ -3,6 +3,7 @@ package com.starshop.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.starshop.common.annotation.business.RemoveOrderDetailRedisCacheAnnotation;
 import com.starshop.common.annotation.business.RemoveOrderSessionAnnotation;
 import com.starshop.common.creation.SnowflakeIdGenerator;
 import com.starshop.common.mapstruct.CopyMapper;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -180,7 +182,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     /**
-     * 根据订单将订单更新为已取消
+     * 取消订单
+     * @param orderNo
+     * @return
+     */
+    @Override
+    @RemoveOrderSessionAnnotation
+    @RemoveOrderDetailRedisCacheAnnotation
+    public Result cancelOrder(String orderNo, String cancelReason) {
+        boolean isSuccess = cancelOrderCommon(orderNo, cancelReason);
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        HashMap<String, String> map = new HashMap<>(2);
+        map.put(Order.Fields.orderNo, orderNo);
+        map.put(Order.Fields.status, OrderStatusEnum.CANCELLED.getValue());
+        return Result.success(map);
+    }
+
+    /**
+     * 根据订单号将订单更新为已取消
      * @param orderNo
      * @param cancelReason
      * @return

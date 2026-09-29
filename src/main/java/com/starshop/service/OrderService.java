@@ -37,4 +37,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result getOrderDesc(@NotBlank String orderNo);
+
+    /**
+     * 取消订单
+     * @param orderNo
+     * @return
+     */
+    Result cancelOrder(@NotBlank String orderNo, String cancelReason);
 }

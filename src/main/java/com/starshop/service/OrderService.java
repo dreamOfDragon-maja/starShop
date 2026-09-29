@@ -58,4 +58,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result confirmOrderReceipt(@NotBlank String orderNo);
+
+    /**
+     * 逻辑删除订单
+     * @param orderNo
+     * @return
+     */
+    Result deleteOrder(@NotBlank String orderNo);
 }

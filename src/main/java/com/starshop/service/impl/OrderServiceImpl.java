@@ -22,6 +22,7 @@ import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.dto.OrderItemDTO;
 import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.OrderItem;
+import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.enums.OrderPageEnum;
 import com.starshop.pojo.enums.OrderStatusEnum;
 import com.starshop.pojo.enums.PayTypeEnum;
@@ -300,5 +301,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         map.put(Order.Fields.receiveTime, now);
         return Result.success(map);
 
+    }
+
+    /**
+     * 逻辑删除订单
+     * @param orderNo
+     * @return
+     */
+    @Override
+    @RemoveOrderSessionAnnotation
+    @RemoveOrderDetailRedisCacheAnnotation
+    public Result deleteOrder(String orderNo) {
+        boolean isSuccess = lambdaUpdate()
+                .set(Order::getIs_deleted, CommonStatus.ACTIVE.getNumber())
+                .eq(Order::getOrderNo, orderNo).update();
+        if (!isSuccess) {
+            return Result.error(MessageConstant.DELETE_ERROR);
+        }
+        return Result.success(orderNo);
     }
 }

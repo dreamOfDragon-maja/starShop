@@ -89,4 +89,14 @@ public class OrderController {
         return orderService.confirmOrderReceipt(orderNo);
     }
 
+    /**
+     * 逻辑删除订单
+     * @param orderNo
+     * @return
+     */
+    @DeleteMapping("/delete")
+    public Result deleteOrder(@RequestParam @NotBlank String orderNo){
+        return orderService.deleteOrder(orderNo);
+    }
+
 }

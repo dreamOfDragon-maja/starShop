@@ -120,4 +120,13 @@ public class OrderController {
         return orderService.getOrderLogistics(orderNo);
     }
 
+    /**
+     * 滚动分页查询订单(全部页面)
+     * @param beginId
+     * @return
+     */
+    @GetMapping("/scroll/query/list")
+    public Result getOrderByScrollQuery(@RequestParam @NotNull Long beginId) {
+        return orderService.getOrderByScrollQuery(beginId);
+    }
 }

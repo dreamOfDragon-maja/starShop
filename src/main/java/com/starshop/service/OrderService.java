@@ -80,4 +80,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result getOrderLogistics(@NotBlank String orderNo);
+
+    /**
+     * 滚动分页查询订单(全部页面)
+     * @param beginId
+     * @return
+     */
+    Result getOrderByScrollQuery(@NotNull Long beginId);
 }

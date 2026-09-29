@@ -8,6 +8,7 @@ import com.starshop.common.annotation.business.RemoveOrderSessionAnnotation;
 import com.starshop.common.creation.SnowflakeIdGenerator;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.PageResult;
+import com.starshop.common.result.ScrollQueryResult;
 import com.starshop.common.utils.DateUtils;
 import com.starshop.common.utils.SessionUtils;
 import com.starshop.constant.DataConstant;
@@ -369,5 +370,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         OrderWithTrackingVO orderWithTrackingVO = copyMapper.orderToOrderWithTrackingVO(order);
         return Result.success(orderWithTrackingVO);
+    }
+
+    /**
+     * 滚动分页查询订单(全部页面)
+     * @param beginId
+     * @return
+     */
+    @Override
+    public Result getOrderByScrollQuery(Long beginId) {
+        String userId = BaseContext.getUserId();
+        List<Order> list;
+        if (Objects.isNull(beginId)) {
+            list = lambdaQuery().eq(Order::getUserId, userId).orderByDesc(Order::getCreateTime)
+                    .eq(Order::getIs_deleted, CommonStatus.INACTIVE.getNumber())
+                    .last("LIMIT " + DataConstant.COMMON_SCROLL_QUERY_NUMBER)
+                    .list();
+        } else {
+            list = lambdaQuery().eq(Order::getUserId, userId).orderByDesc(Order::getCreateTime).lt(Order::getId, beginId)
+                    .eq(Order::getIs_deleted, CommonStatus.INACTIVE.getNumber())
+                    .last("LIMIT " + DataConstant.COMMON_SCROLL_QUERY_NUMBER)
+                    .list();
+        }
+        if (list.isEmpty()) {
+            return Result.success(ScrollQueryResult.builder().list(list).endId(beginId).build());
+        }
+        Long endId = list.get(list.size() - 1).getId();
+        return Result.success(ScrollQueryResult.builder().list(list).endId(endId).build());
     }
 }

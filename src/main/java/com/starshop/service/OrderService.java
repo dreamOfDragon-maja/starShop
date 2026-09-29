@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.entity.Order;
 import com.starshop.result.Result;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public interface OrderService extends IService<Order> {
@@ -22,4 +23,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result getOrderList(Integer pageNum, Integer pageSize, String status);
+
+    /**
+     * 查询指定页面订单列表
+     * @param pageName
+     * @return
+     */
+    Result getOrderListByPage(@NotBlank String pageName);
 }

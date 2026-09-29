@@ -68,6 +68,14 @@
         oi.create_time DESC
     </select>
 
+    <select id="getUserAllOrder" resultMap="OrderWithItemResultMap">
+        <include refid="selectOrderWithOrderItem_JOIN_SQL"/>
+        where o.is_deleted = 0
+        and o.user_id=#{userId}
+        order by o.update_time DESC,
+        oi.create_time DESC
+    </select>
+
     <sql id="selectOrderWithOrderItem_JOIN_SQL">
         SELECT o.id          as order_id,
         o.order_no,

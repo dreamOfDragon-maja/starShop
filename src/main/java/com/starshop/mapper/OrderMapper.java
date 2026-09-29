@@ -6,9 +6,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starshop.pojo.entity.Order;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 
     IPage<Order> getOrderList(Page<Object> objectPage, String userId, int status);
+
+    List<Order> getUserAllOrder(String userId);
 
 }

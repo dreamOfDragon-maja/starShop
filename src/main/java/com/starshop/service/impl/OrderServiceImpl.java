@@ -8,6 +8,7 @@ import com.starshop.common.creation.SnowflakeIdGenerator;
 import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.PageResult;
 import com.starshop.common.utils.DateUtils;
+import com.starshop.common.utils.SessionUtils;
 import com.starshop.constant.MessageConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.job.delay.CancelUnpaidOrderDelayJob;
@@ -16,6 +17,7 @@ import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.dto.OrderItemDTO;
 import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.OrderItem;
+import com.starshop.pojo.enums.OrderPageEnum;
 import com.starshop.pojo.enums.OrderStatusEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
 import com.starshop.result.Result;
@@ -46,6 +48,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Resource
     private OrderMapper orderMapper;
+
+    @Resource
+    private SessionUtils sessionUtils;
 
     /**
      * 创建订单
@@ -105,6 +110,37 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 .build();
 
         return Result.success(pageResult);
+    }
+
+    /**
+     * 查询指定页面订单列表
+     * 查询后存入session,进行复用,一致性基于自定义注解
+     * @param pageName
+     * @return
+     */
+    @Override
+    public Result getOrderListByPage(String pageName) {
+        String userId = BaseContext.getUserId();
+        //获取分页页面
+        OrderPageEnum orderPageEnum = OrderPageEnum.getByPageKey(pageName);
+        List<Order> userAllOrder = sessionUtils.getUserAllOrder(orderMapper::getUserAllOrder, userId);
+        if (userAllOrder.isEmpty()) {
+            return Result.success();
+        }
+        //全部订单
+        if (orderPageEnum.equals(OrderPageEnum.ALL)) {
+            List<OrderWithItemVO> orderWithItemVOs = userAllOrder.stream().
+                    map(order -> copyMapper.orderToOrderWithItemVO(order)).toList();
+            return Result.success(orderWithItemVOs);
+        }
+        //过滤指定的分页页面
+        List<Order> list = userAllOrder.stream().
+                filter(order -> order.getStatus().getPageCode() == orderPageEnum.getPageCode())
+                .toList();
+
+        List<OrderWithItemVO> orderWithItemVOs = list.stream()
+                .map(order -> copyMapper.orderToOrderWithItemVO(order)).toList();
+        return Result.success(orderWithItemVOs);
     }
 
     /**

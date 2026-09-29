@@ -4,6 +4,7 @@ import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.result.Result;
 import com.starshop.service.OrderService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +37,15 @@ public class OrderController {
             , @RequestParam(defaultValue = "10") Integer pageSize
             , @RequestParam(defaultValue = "pendingPayment") String status) {
         return orderService.getOrderList(pageNum, pageSize, status);
+    }
+
+    /**
+     * 查询指定页面订单列表
+     * @param pageName
+     * @return
+     */
+    @GetMapping("/page/list")
+    public Result getOrderListByPage(@RequestParam @NotBlank String pageName) {
+        return orderService.getOrderListByPage(pageName);
     }
 }

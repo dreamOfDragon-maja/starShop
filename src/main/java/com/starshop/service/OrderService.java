@@ -65,4 +65,12 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result deleteOrder(@NotBlank String orderNo);
+
+    /**
+     * 计算运费
+     * @param productIds
+     * @param addressId
+     * @return
+     */
+    Result getOrderFreight(@NotBlank String productIds, @NotBlank String addressId);
 }

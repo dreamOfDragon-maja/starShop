@@ -99,4 +99,15 @@ public class OrderController {
         return orderService.deleteOrder(orderNo);
     }
 
+    /**
+     * 计算运费
+     * @param productIds
+     * @param addressId
+     * @return
+     */
+    @GetMapping("/freight")
+    public Result getOrderFreight(@RequestParam @NotBlank String productIds, @RequestParam @NotBlank String addressId) {
+        return orderService.getOrderFreight(productIds, addressId);
+    }
+
 }

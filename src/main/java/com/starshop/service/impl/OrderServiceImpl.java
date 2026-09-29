@@ -20,6 +20,7 @@ import com.starshop.job.delay.CancelUnpaidOrderDelayJob;
 import com.starshop.mapper.OrderMapper;
 import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.dto.OrderItemDTO;
+import com.starshop.pojo.entity.Address;
 import com.starshop.pojo.entity.Order;
 import com.starshop.pojo.entity.OrderItem;
 import com.starshop.pojo.enums.CommonStatus;
@@ -29,12 +30,17 @@ import com.starshop.pojo.enums.PayTypeEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
 import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
+import com.starshop.service.AddressService;
 import com.starshop.service.OrderItemService;
 import com.starshop.service.OrderService;
+import io.netty.util.internal.ThreadLocalRandom;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -66,9 +72,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Resource
     private RedisCacheTtlProperties redisCacheTtlProperties;
 
+    @Resource
+    private AddressService addressService;
+
     private static final Order emptyOrder = Order.builder().id(DataConstant.ZERO_LONG).build();
     private static final String IS_SUCCESS = "isSuccess";
     private static final String TRY_NUM = "tryNum";
+    private static final String PRODUCT_IDS = "productIds";
 
     /**
      * 创建订单
@@ -319,5 +329,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return Result.error(MessageConstant.DELETE_ERROR);
         }
         return Result.success(orderNo);
+    }
+
+    /**
+     * 计算运费
+     * @param productIds
+     * @param addressId
+     * @return
+     */
+    @Override
+    public Result getOrderFreight(String productIds, String addressId) {
+        String[] productIdsArray = StringUtils.split(productIds, ",");
+        Address address = addressService.getById(addressId);
+        if (Objects.isNull(address)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        //根据商品数量乘以一个 3~8 之间的随机小数
+        BigDecimal originalFreight = BigDecimal.valueOf(productIdsArray.length * ThreadLocalRandom.current().nextDouble(3, 8));
+        //保留两位小数，并且四舍五入
+        double freight = originalFreight.setScale(2, RoundingMode.HALF_UP).doubleValue();
+
+        HashMap<String, Object> map = new HashMap<>(2);
+        map.put(Order.Fields.freight, freight);
+        map.put(PRODUCT_IDS, productIdsArray);
+        return Result.success(map);
     }
 }

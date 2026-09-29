@@ -1,7 +1,7 @@
 package com.starshop.controller.admin;
 
 import com.starshop.pojo.dto.CouponCreateDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CouponService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

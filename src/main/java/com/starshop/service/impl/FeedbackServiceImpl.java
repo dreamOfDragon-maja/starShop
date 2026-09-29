@@ -6,7 +6,7 @@ import com.starshop.context.BaseContext;
 import com.starshop.mapper.FeedbackMapper;
 import com.starshop.pojo.dto.FeedbackDTO;
 import com.starshop.pojo.entity.Feedback;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.FeedbackService;
 import org.springframework.stereotype.Service;
 

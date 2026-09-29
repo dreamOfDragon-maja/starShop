@@ -4,7 +4,7 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.job.delay.SaveCartRedisCacheDelayJob;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.annotation.Resource;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;

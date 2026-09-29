@@ -7,7 +7,7 @@ import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.vo.SimpleProductVO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

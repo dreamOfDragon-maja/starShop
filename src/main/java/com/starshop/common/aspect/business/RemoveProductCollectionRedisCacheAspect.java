@@ -2,8 +2,7 @@ package com.starshop.common.aspect.business;
 
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
-import com.starshop.result.Result;
-import jakarta.validation.constraints.NotNull;
+import com.starshop.common.result.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

@@ -8,7 +8,7 @@ import com.starshop.mapper.AddressMapper;
 import com.starshop.pojo.dto.AddressDTO;
 import com.starshop.pojo.entity.Address;
 import com.starshop.pojo.enums.CommonDefault;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.AddressService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;

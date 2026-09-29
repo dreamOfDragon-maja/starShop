@@ -32,7 +32,7 @@ import com.starshop.pojo.enums.PayTypeEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
 import com.starshop.pojo.vo.OrderWithTrackingVO;
 import com.starshop.properties.RedisCacheTtlProperties;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.AddressService;
 import com.starshop.service.OrderItemService;
 import com.starshop.service.OrderService;

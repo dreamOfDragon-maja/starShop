@@ -8,7 +8,7 @@ import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.LoginService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

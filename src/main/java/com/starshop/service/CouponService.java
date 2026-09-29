@@ -3,7 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.CouponCreateDTO;
 import com.starshop.pojo.entity.Coupon;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

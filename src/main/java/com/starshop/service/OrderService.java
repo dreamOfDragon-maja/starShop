@@ -3,7 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.entity.Order;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

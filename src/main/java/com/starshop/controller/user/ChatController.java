@@ -5,7 +5,7 @@ import com.starshop.common.result.PageResult;
 import com.starshop.context.BaseContext;
 import com.starshop.pojo.entity.ChatMessage;
 import com.starshop.pojo.vo.ChatSessionVO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

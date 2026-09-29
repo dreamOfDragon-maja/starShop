@@ -7,7 +7,7 @@ import com.starshop.constant.MessageConstant;
 import com.starshop.mapper.FactoryInfoMapper;
 import com.starshop.pojo.entity.FactoryInfo;
 import com.starshop.pojo.vo.FactoryInfoVO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.FactoryInfoService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

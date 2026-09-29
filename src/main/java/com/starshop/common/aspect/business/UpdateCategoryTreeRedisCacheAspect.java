@@ -1,6 +1,6 @@
 package com.starshop.common.aspect.business;
 
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CategoryService;
 import jakarta.annotation.Resource;
 import org.aspectj.lang.annotation.AfterReturning;

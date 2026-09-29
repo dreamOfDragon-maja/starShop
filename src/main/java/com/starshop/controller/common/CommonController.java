@@ -1,7 +1,7 @@
 package com.starshop.controller.common;
 
 import com.starshop.common.utils.AliyunOSSUtils;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

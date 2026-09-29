@@ -6,7 +6,7 @@ import com.starshop.pojo.dto.UserLoginDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.dto.UserWechatDTO;
 import com.starshop.pojo.entity.SysUser;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.constraints.NotBlank;
 
 public interface LoginService extends IService<SysUser> {

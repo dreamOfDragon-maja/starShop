@@ -1,7 +1,7 @@
 package com.starshop.controller.admin;
 
 import com.starshop.pojo.dto.CategoryDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CategoryService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

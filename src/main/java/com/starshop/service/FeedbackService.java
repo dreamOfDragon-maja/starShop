@@ -3,7 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.FeedbackDTO;
 import com.starshop.pojo.entity.Feedback;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.constraints.NotNull;
 
 public interface FeedbackService extends IService<Feedback> {

@@ -17,7 +17,7 @@ import com.starshop.pojo.entity.Product;
 import com.starshop.pojo.entity.ProductSpec;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.properties.RedisCacheTtlProperties;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CartService;
 import com.starshop.service.ProductService;
 import jakarta.annotation.Resource;

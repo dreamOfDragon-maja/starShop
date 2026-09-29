@@ -1,7 +1,7 @@
 package com.starshop.common.aspect.business;
 
 import com.starshop.common.utils.SessionUtils;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.annotation.Resource;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;

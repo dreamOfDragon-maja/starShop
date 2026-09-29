@@ -2,7 +2,7 @@ package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.entity.ProductSearchKeyword;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 
 import java.util.List;
 

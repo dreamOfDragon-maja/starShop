@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.CartDTO;
 import com.starshop.pojo.dto.CartProductDTO;
 import com.starshop.pojo.entity.Cart;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 
 public interface CartService extends IService<Cart> {
 

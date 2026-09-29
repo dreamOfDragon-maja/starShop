@@ -1,7 +1,7 @@
 package com.starshop.security.handler;
 
 import com.starshop.constant.MessageConstant;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.UnauthenticatedException;

@@ -1,7 +1,7 @@
 package com.starshop.controller.admin;
 
 import com.starshop.pojo.dto.OrderDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.OrderService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;

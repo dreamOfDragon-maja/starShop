@@ -1,7 +1,7 @@
 package com.starshop.controller.admin;
 
 import com.starshop.pojo.dto.FeedbackDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.FeedbackService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;

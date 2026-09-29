@@ -30,7 +30,7 @@ import com.starshop.pojo.vo.ProductSpecVO;
 import com.starshop.pojo.vo.SimpleProductVO;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.properties.RedisCacheTtlProperties;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.MqConsumerFailedMsgService;
 import com.starshop.service.ProductRedisCacheService;

@@ -12,7 +12,7 @@ import com.starshop.context.BaseContext;
 import com.starshop.mapper.CollectionMapper;
 import com.starshop.pojo.entity.ProductCollection;
 import com.starshop.pojo.vo.SimpleProductVO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CollectionService;
 import com.starshop.service.ProductService;
 import jakarta.annotation.Resource;

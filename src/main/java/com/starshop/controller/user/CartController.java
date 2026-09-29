@@ -3,7 +3,7 @@ package com.starshop.controller.user;
 import com.starshop.common.annotation.business.SaveCartRedisCacheToMysqlAnnotation;
 import com.starshop.pojo.dto.CartDTO;
 import com.starshop.pojo.dto.CartProductDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CartService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;

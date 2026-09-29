@@ -21,7 +21,7 @@ import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.enums.UserRoleEnum;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.properties.JwtProperties;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.LoginService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;

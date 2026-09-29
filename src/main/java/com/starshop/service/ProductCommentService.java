@@ -4,7 +4,7 @@ import com.starshop.common.result.CursorCommonEntity;
 import com.starshop.pojo.dto.AppendProductFirstCommentDTO;
 import com.starshop.pojo.dto.FirstProductCommentDTO;
 import com.starshop.pojo.dto.SecondProductCommentDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.common.result.SimpleCursorCommonEntity;
 import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.pojo.entity.ProductCollection;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 

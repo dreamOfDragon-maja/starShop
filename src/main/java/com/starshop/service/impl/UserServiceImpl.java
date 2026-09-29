@@ -8,7 +8,7 @@ import com.starshop.mapper.SysUserMapper;
 import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.pojo.vo.UserDetailVO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;

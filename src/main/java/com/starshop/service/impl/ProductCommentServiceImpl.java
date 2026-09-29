@@ -32,7 +32,7 @@ import com.starshop.pojo.entity.ProductCommentLike;
 import com.starshop.pojo.enums.ProductCommentQuerySortTypeEnum;
 import com.starshop.pojo.vo.ProductAppendCommentVO;
 import com.starshop.properties.RedisCacheTtlProperties;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.ProductCommentService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

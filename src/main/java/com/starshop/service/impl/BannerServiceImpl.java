@@ -12,7 +12,7 @@ import com.starshop.pojo.dto.BannerSortDTO;
 import com.starshop.pojo.dto.BannerStatusDTO;
 import com.starshop.pojo.entity.Banner;
 import com.starshop.pojo.enums.BannerStatus;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.BannerService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

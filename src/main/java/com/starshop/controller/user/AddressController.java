@@ -1,7 +1,7 @@
 package com.starshop.controller.user;
 
 import com.starshop.pojo.dto.AddressDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.AddressService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;

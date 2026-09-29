@@ -2,7 +2,7 @@ package com.starshop.common.aspect.business;
 
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;

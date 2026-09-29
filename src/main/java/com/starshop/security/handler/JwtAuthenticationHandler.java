@@ -2,7 +2,7 @@ package com.starshop.security.handler;
 
 import com.starshop.common.result.ResultCode;
 import com.starshop.constant.MessageConstant;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.DecodingException;

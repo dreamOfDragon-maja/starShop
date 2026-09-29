@@ -3,7 +3,7 @@ package com.starshop.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.CategoryDTO;
 import com.starshop.pojo.entity.Category;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 
 public interface CategoryService extends IService<Category> {
 

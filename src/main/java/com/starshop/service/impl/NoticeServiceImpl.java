@@ -7,7 +7,7 @@ import com.starshop.constant.MessageConstant;
 import com.starshop.mapper.NoticeMapper;
 import com.starshop.pojo.dto.NoticeDTO;
 import com.starshop.pojo.entity.Notice;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.NoticeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

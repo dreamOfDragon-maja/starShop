@@ -1,6 +1,5 @@
-package com.starshop.result;
+package com.starshop.common.result;
 
-import com.starshop.common.result.ResultCode;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import org.springframework.web.context.request.RequestContextHolder;

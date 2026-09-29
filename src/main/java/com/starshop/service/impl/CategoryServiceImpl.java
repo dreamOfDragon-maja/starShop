@@ -14,7 +14,7 @@ import com.starshop.mapper.CategoryMapper;
 import com.starshop.pojo.dto.CategoryDTO;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.Category;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CategoryService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

@@ -12,7 +12,7 @@ import com.starshop.pojo.entity.Coupon;
 import com.starshop.pojo.entity.CouponUser;
 import com.starshop.pojo.enums.CouponUseStatusEnum;
 import com.starshop.pojo.enums.CouponValidModeEnum;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.CouponService;
 import com.starshop.service.CouponUserService;
 import lombok.RequiredArgsConstructor;

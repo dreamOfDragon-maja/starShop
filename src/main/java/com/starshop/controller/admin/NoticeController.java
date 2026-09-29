@@ -1,7 +1,7 @@
 package com.starshop.controller.admin;
 
 import com.starshop.pojo.dto.NoticeDTO;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.NoticeService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;

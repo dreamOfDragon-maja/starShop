@@ -4,19 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.utils.CaffeineUtils;
 import com.starshop.mapper.ProductSearchKeywordMapper;
-import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.entity.ProductSearchKeyword;
-import com.starshop.result.Result;
+import com.starshop.common.result.Result;
 import com.starshop.service.ProductSearchKeywordService;
 import jakarta.annotation.Resource;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductSearchKeywordServiceImpl extends ServiceImpl<ProductSearchKeywordMapper, ProductSearchKeyword> implements ProductSearchKeywordService {

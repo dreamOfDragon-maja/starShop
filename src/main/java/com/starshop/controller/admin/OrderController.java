@@ -5,10 +5,7 @@ import com.starshop.result.Result;
 import com.starshop.service.OrderService;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/order")
@@ -25,5 +22,19 @@ public class OrderController {
     @PostMapping("/create")
     public Result insertOrder(@RequestBody @NotNull OrderDTO orderDTO) {
         return orderService.insertOrder(orderDTO);
+    }
+
+    /**
+     * 获取订单列表
+     * @param pageNum
+     * @param pageSize
+     * @param status
+     * @return
+     */
+    @GetMapping("/list")
+    public Result getOrderList(@RequestParam(defaultValue = "1") Integer pageNum
+            , @RequestParam(defaultValue = "10") Integer pageSize
+            , @RequestParam(defaultValue = "pendingPayment") String status) {
+        return orderService.getOrderList(pageNum, pageSize, status);
     }
 }

@@ -13,4 +13,13 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result insertOrder(@NotNull OrderDTO orderDTO);
+
+    /**
+     * 获取订单列表
+     * @param pageNum
+     * @param pageSize
+     * @param status
+     * @return
+     */
+    Result getOrderList(Integer pageNum, Integer pageSize, String status);
 }

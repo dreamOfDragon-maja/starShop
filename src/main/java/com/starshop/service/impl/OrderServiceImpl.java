@@ -1,9 +1,12 @@
 package com.starshop.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.annotation.business.RemoveOrderSessionAnnotation;
 import com.starshop.common.creation.SnowflakeIdGenerator;
 import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.common.result.PageResult;
 import com.starshop.common.utils.DateUtils;
 import com.starshop.constant.MessageConstant;
 import com.starshop.context.BaseContext;
@@ -41,6 +44,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Resource
     private CancelUnpaidOrderDelayJob cancelUnpaidOrderDelayJob;
 
+    @Resource
+    private OrderMapper orderMapper;
+
     /**
      * 创建订单
      * @param orderDTO
@@ -74,6 +80,31 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         OrderWithItemVO orderWithItemVO = copyMapper.orderToOrderWithItemVO(order);
         return Result.success(orderWithItemVO);
+    }
+
+    /**
+     * 获取订单列表
+     * @param pageNum
+     * @param pageSize
+     * @param status
+     * @return
+     */
+    @Override
+    public Result getOrderList(Integer pageNum, Integer pageSize, String status) {
+        String userId = BaseContext.getUserId();
+        //获取订单状态
+        int code = OrderStatusEnum.getByValue(status).getCode();
+        IPage<Order> orderIPage = orderMapper.getOrderList(new Page<>(pageNum,pageSize),userId,code);
+        List<OrderWithItemVO> orderWithItemVOS = orderIPage.getRecords().stream()
+                .map(order -> copyMapper.orderToOrderWithItemVO(order)).toList();
+        PageResult pageResult = PageResult.builder()
+                .list(orderWithItemVOS)
+                .total(orderIPage.getTotal())
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .build();
+
+        return Result.success(pageResult);
     }
 
     /**

@@ -78,4 +78,15 @@ public class OrderController {
     public Result paySuccessOrder(@RequestParam @NotBlank String orderNo){
         return orderService.paySuccessOrder(orderNo);
     }
+
+    /**
+     * 确认收货
+     * @param orderNo
+     * @return
+     */
+    @PutMapping("/confirmReceipt")
+    public Result confirmOrderReceipt(@RequestParam @NotBlank String orderNo) {
+        return orderService.confirmOrderReceipt(orderNo);
+    }
+
 }

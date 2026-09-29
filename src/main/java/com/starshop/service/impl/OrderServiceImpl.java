@@ -275,4 +275,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         map.put(TRY_NUM, tryNum);
         return map;
     }
+
+    /**
+     * 确认收货
+     * @param orderNo
+     * @return
+     */
+    @Override
+    @RemoveOrderSessionAnnotation
+    @RemoveOrderDetailRedisCacheAnnotation
+    public Result confirmOrderReceipt(String orderNo) {
+        String userId = BaseContext.getUserId();
+        String now = DateUtils.formatLocalDateTime(LocalDateTime.now());
+        boolean isSuccess = lambdaUpdate().eq(Order::getUserId, userId)
+                .eq(Order::getOrderNo, orderNo)
+                .set(Order::getStatus, OrderStatusEnum.COMPLETED.getCode())
+                .set(Order::getReceiveTime, now).update();
+        if (!isSuccess) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+        HashMap<String, Object> map = new HashMap<>(3);
+        map.put(Order.Fields.orderNo, orderNo);
+        map.put(Order.Fields.status, OrderStatusEnum.COMPLETED.getValue());
+        map.put(Order.Fields.receiveTime, now);
+        return Result.success(map);
+
+    }
 }

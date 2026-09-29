@@ -51,4 +51,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result paySuccessOrder(@NotBlank String orderNo);
+
+    /**
+     * 确认收货
+     * @param orderNo
+     * @return
+     */
+    Result confirmOrderReceipt(@NotBlank String orderNo);
 }

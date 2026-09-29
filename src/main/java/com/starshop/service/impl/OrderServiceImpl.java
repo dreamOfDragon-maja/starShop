@@ -9,8 +9,11 @@ import com.starshop.common.mapstruct.CopyMapper;
 import com.starshop.common.result.PageResult;
 import com.starshop.common.utils.DateUtils;
 import com.starshop.common.utils.SessionUtils;
+import com.starshop.constant.DataConstant;
 import com.starshop.constant.MessageConstant;
+import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
+import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.job.delay.CancelUnpaidOrderDelayJob;
 import com.starshop.mapper.OrderMapper;
 import com.starshop.pojo.dto.OrderDTO;
@@ -20,6 +23,7 @@ import com.starshop.pojo.entity.OrderItem;
 import com.starshop.pojo.enums.OrderPageEnum;
 import com.starshop.pojo.enums.OrderStatusEnum;
 import com.starshop.pojo.vo.OrderWithItemVO;
+import com.starshop.properties.RedisCacheTtlProperties;
 import com.starshop.result.Result;
 import com.starshop.service.OrderItemService;
 import com.starshop.service.OrderService;
@@ -30,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService{
@@ -51,6 +56,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Resource
     private SessionUtils sessionUtils;
+
+    @Resource
+    private RedisCacheTtlProperties redisCacheTtlProperties;
+
+    private static final Order emptyOrder = Order.builder().id(DataConstant.ZERO_LONG).build();
 
     /**
      * 创建订单
@@ -141,6 +151,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         List<OrderWithItemVO> orderWithItemVOs = list.stream()
                 .map(order -> copyMapper.orderToOrderWithItemVO(order)).toList();
         return Result.success(orderWithItemVOs);
+    }
+
+    /**
+     * 查看订单详情
+     * @param orderNo
+     * @return
+     */
+    @Override
+    public Result getOrderDesc(String orderNo) {
+        //先查询缓存
+        String key = RedisKeyConstant.PREFIX_ORDER + RedisKeyConstant.DETAIL + RedisKeyConstant.ORDER_NO + orderNo;
+        Order order = RedisConnector.getHashObject(key, Order.class);
+        if (Objects.isNull(order)) {
+            order = orderMapper.getOrderDesc(orderNo);
+            //如果查询结果为null就缓存空对象
+            order = Objects.isNull(order) ? emptyOrder : order;
+            RedisConnector.setHashObject(key, order);
+            RedisConnector.expire(key, redisCacheTtlProperties.getOrderTtl(), TimeUnit.SECONDS);
+        }
+        //过滤空对象
+        if (order.equals(emptyOrder)) {
+            return Result.error(MessageConstant.ORDER_NOT_FOUND);
+        }
+        OrderWithItemVO orderWithItemVO = copyMapper.orderToOrderWithItemVO(order);
+        return Result.success(orderWithItemVO);
+
     }
 
     /**

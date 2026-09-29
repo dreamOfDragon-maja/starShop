@@ -15,4 +15,6 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     List<Order> getUserAllOrder(String userId);
 
+    Order getOrderDesc(String orderNo);
+
 }

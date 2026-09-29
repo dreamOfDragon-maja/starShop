@@ -30,4 +30,11 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result getOrderListByPage(@NotBlank String pageName);
+
+    /**
+     * 查看订单详情
+     * @param orderNo
+     * @return
+     */
+    Result getOrderDesc(@NotBlank String orderNo);
 }

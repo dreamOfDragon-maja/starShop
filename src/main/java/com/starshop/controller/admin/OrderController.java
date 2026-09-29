@@ -48,4 +48,14 @@ public class OrderController {
     public Result getOrderListByPage(@RequestParam @NotBlank String pageName) {
         return orderService.getOrderListByPage(pageName);
     }
+
+    /**
+     * 查看订单详情
+     * @param orderNo
+     * @return
+     */
+    @GetMapping("/detail")
+    public Result getOrderDesc(@RequestParam @NotBlank String orderNo) {
+        return orderService.getOrderDesc(orderNo);
+    }
 }

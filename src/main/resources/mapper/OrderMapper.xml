@@ -76,6 +76,11 @@
         oi.create_time DESC
     </select>
 
+    <select id="getOrderDesc" resultMap="OrderWithItemResultMap">
+        <include refid="selectOrderWithOrderItemAndAddress_JOIN_SQL"/>
+        where o.order_no=#{orderNo}
+    </select>
+
     <sql id="selectOrderWithOrderItem_JOIN_SQL">
         SELECT o.id          as order_id,
         o.order_no,
@@ -109,6 +114,53 @@
         oi.create_time
         FROM `order` o
         LEFT JOIN order_item oi ON o.id = oi.order_id
+    </sql>
+
+    <sql id="selectOrderWithOrderItemAndAddress_JOIN_SQL">
+        SELECT o.id          as order_id,
+        o.order_no,
+        o.user_id,
+        o.address_id,
+        o.total_goods_amount,
+        o.freight,
+        o.total_amount,
+        o.status,
+        o.pay_type,
+        o.pay_time,
+        o.deliver_time,
+        o.receive_time,
+        o.cancel_time,
+        o.cancel_reason,
+        o.remark,
+        o.logistics_company,
+        o.logistics_no,
+        o.create_time as order_create_time,
+        o.update_time as order_update_time,
+        oi.id,
+        #              oi.order_id,
+        oi.product_id,
+        oi.spec_id,
+        oi.product_name,
+        oi.spec_text,
+        oi.product_image,
+        oi.price,
+        oi.quantity,
+        oi.subtotal,
+        oi.create_time,
+        #              a.id          as address_id,
+        a.receiver,
+        a.phone,
+        a.province,
+        a.city,
+        a.district,
+        a.detail_address,
+        a.detail_address,
+        a.is_default,
+        a.create_time as address_create_time,
+        a.update_time as address_update_time
+        FROM `order` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        INNER JOIN address a ON o.address_id = a.id
     </sql>
 
 </mapper>

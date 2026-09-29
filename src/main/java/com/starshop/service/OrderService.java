@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.OrderDTO;
 import com.starshop.pojo.entity.Order;
 import com.starshop.common.result.Result;
+import com.starshop.pojo.enums.OrderStatusEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -94,4 +95,6 @@ public interface OrderService extends IService<Order> {
      * @return
      */
     Result searchOrderByCondition(@NotBlank String searchCondition);
+
+    Boolean updateOrderStatus(Long orderId, String orderNo, @NotNull OrderStatusEnum orderStatusEnum);
 }

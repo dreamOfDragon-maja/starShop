@@ -181,38 +181,6 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, SysUser> implement
         return Result.success(sysUser.getId());
     }
 
-    /**
-     * 更新用户信息
-     * @param userUpdateDTO
-     * @return
-     */
-    @Override
-    @Transactional
-    public Result<UserInfo> updateUserInfo(UserUpdateDTO userUpdateDTO) {
-        //1.查询当前用户
-        Long userId = Long.valueOf(BaseContext.getUserId());
-        //2.判断用户在数据库中是否存在
-        SysUser sysUser = lambdaQuery().eq(SysUser::getId, userId).one();
-        if(Objects.isNull(sysUser)){
-            return Result.error(MessageConstant.USER_NOT_EXISTS);
-        }
-        //3.利用mapstruct更新数据
-        copyMapper.updateUserFromDTO(userUpdateDTO, sysUser);
-        //4.数据同步到数据库
-        boolean isSuccess = updateById(sysUser);
-        if (!isSuccess) {
-            return Result.error(MessageConstant.SQL_MESSAGE_UPDATE_ERROR);
-        }
-        //5.封装VO
-        UserInfo userInfo = copyMapper.usertoUserInfo(sysUser);
-        //6.将数据同步到redis
-        String key = RedisKeyConstant.PREFIX_LOGIN + RedisKeyConstant.USER + userId;
-        if (RedisConnector.hasKey(key)) {
-            RedisConnector.opsForHash().put(key, SysUser.Fields.userInfo, userInfo);
-        }
-
-        return Result.success(userInfo);
-    }
 
     /**
      * 刷新token

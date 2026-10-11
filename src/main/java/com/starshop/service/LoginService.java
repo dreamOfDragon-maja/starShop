@@ -54,13 +54,6 @@ public interface LoginService extends IService<SysUser> {
     Result<Object> getUser();
 
     /**
-     * 更新用户信息
-     * @param userUpdateDTO
-     * @return
-     */
-    Result<UserInfo> updateUserInfo(UserUpdateDTO userUpdateDTO);
-
-    /**
      * 修改密码
      * @param username
      * @param passwordOld

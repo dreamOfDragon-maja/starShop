@@ -8,14 +8,12 @@ import com.starshop.constant.RedisKeyConstant;
 import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.SysUserMapper;
-import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.pojo.vo.UserDetailVO;
 import com.starshop.common.result.Result;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

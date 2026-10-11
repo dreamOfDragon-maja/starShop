@@ -1,7 +1,6 @@
 package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.common.result.Result;

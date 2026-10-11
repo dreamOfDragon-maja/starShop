@@ -2,7 +2,6 @@ package com.starshop.controller.user;
 
 import com.starshop.common.result.SimpleCursorCommonEntity;
 import com.starshop.common.result.SimpleCursorCommonResult;
-import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.common.result.Result;
 import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.service.CollectionService;

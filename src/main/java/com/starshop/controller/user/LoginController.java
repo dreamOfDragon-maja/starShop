@@ -58,6 +58,15 @@ public class LoginController {
     }
 
     /**
+     * 获取当前用户信息
+     * @return
+     */
+    @GetMapping("/info")
+    public Result getUser() {
+        return loginService.getUser();
+    }
+
+    /**
      * 退出登录
      * @return
      */

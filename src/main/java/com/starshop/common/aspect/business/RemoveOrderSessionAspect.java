@@ -17,7 +17,7 @@ public class RemoveOrderSessionAspect {
     @Resource
     private SessionUtils sessionUtils;
 
-    @Pointcut(value = "@annotation(com.starshop.annotation.business.RemoveOrderSessionAnnotation)")
+    @Pointcut(value = "@annotation(com.starshop.common.annotation.business.RemoveOrderSessionAnnotation)")
     public void pointcut() {
     }
 

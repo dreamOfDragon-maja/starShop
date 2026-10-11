@@ -1,4 +1,4 @@
-package com.starshop.infrastructure.es.repositery.impl;
+package com.starshop.infrastructure.es.repository.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
@@ -11,11 +11,10 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.starshop.common.annotation.common.ParamCheckAnnotation;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.index.EsIndexEnum;
-import com.starshop.infrastructure.es.repositery.ProductEsRepository;
+import com.starshop.infrastructure.es.repository.ProductEsRepository;
 import com.starshop.pojo.enums.CommonSortTypeEnum;
 import com.starshop.pojo.enums.CommonStatus;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
-import com.starshop.pojo.vo.SimpleProductVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;

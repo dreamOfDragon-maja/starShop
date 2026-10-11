@@ -1,9 +1,8 @@
-package com.starshop.infrastructure.es.repositery;
+package com.starshop.infrastructure.es.repository;
 
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.pojo.enums.CommonSortTypeEnum;
 import com.starshop.pojo.enums.ProductSortTypeEnum;
-import com.starshop.pojo.vo.SimpleProductVO;
 
 import java.util.List;
 

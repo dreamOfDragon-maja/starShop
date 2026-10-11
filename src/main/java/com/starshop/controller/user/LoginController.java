@@ -58,27 +58,6 @@ public class LoginController {
     }
 
     /**
-     * 获取当前用户信息
-     * @return
-     */
-    @GetMapping("/info")
-    public Result getUser() {
-        return loginService.getUser();
-    }
-
-    /**
-     * 更新用户信息
-     * @param userUpdateDTO
-     * @return
-     */
-    @PutMapping("/info")
-
-    public Result<UserInfo> updateUserInfo(@RequestBody @Validated UserUpdateDTO userUpdateDTO){
-        log.info("更新用户信息{}",userUpdateDTO);
-        return loginService.updateUserInfo(userUpdateDTO);
-    }
-
-    /**
      * 退出登录
      * @return
      */

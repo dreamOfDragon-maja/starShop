@@ -2,6 +2,7 @@ package com.starshop.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.starshop.pojo.dto.UserDetailDTO;
+import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.pojo.entity.SysUser;
 import com.starshop.common.result.Result;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +16,8 @@ public interface UserService extends IService<SysUser> {
 
     /**
      * 更改用户详情
-     * @param userDetailDTO
+     * @param userUpdateDTO
      * @return
      */
-    Result updateUserDetail(@NotNull UserDetailDTO userDetailDTO);
+    Result updateUserDetail(@NotNull UserUpdateDTO userUpdateDTO);
 }

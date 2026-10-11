@@ -80,10 +80,12 @@ public class CouponUseStatusChangeListener {
                     continue;
                 }
                 //获取优惠券id
-                String taskId = taskSet.toArray()[0].toString();
-                //执行过期逻辑
+                Object member = taskSet.toArray()[0];
+                String taskId = member.toString();
+                // 用原始对象删除，避免 String/Long 类型不一致导致 Jackson 序列化后不匹配
+                RedisConnector.opsForZSet().remove(zSetKey, member);
+                // 执行过期逻辑
                 doExpireBiz(taskId, zSetKey);
-                RedisConnector.opsForZSet().remove(zSetKey, taskId);
             } catch (InterruptedException e) {
                 log.warn("监听线程被中断，即将退出");
                 Thread.currentThread().interrupt();

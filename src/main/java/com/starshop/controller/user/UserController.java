@@ -4,6 +4,7 @@ import com.starshop.common.result.SimpleCursorCommonEntity;
 import com.starshop.common.result.SimpleCursorCommonResult;
 import com.starshop.pojo.dto.UserDetailDTO;
 import com.starshop.common.result.Result;
+import com.starshop.pojo.dto.UserUpdateDTO;
 import com.starshop.service.CollectionService;
 import com.starshop.service.UserService;
 import jakarta.annotation.Resource;
@@ -33,12 +34,12 @@ public class UserController {
 
     /**
      * 更改用户详情
-     * @param userDetailDTO
+     * @param userUpdateDTO
      * @return
      */
     @PutMapping("/detail/update")
-    public Result updateUserDetail(@RequestBody @NotNull UserDetailDTO userDetailDTO) {
-        return userService.updateUserDetail(userDetailDTO);
+    public Result updateUserDetail(@RequestBody @NotNull UserUpdateDTO userUpdateDTO) {
+        return userService.updateUserDetail(userUpdateDTO);
     }
 
     /**

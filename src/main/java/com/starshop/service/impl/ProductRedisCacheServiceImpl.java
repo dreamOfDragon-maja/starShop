@@ -1,18 +1,12 @@
 package com.starshop.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.starshop.common.mapstruct.CopyMapper;
-import com.starshop.common.utils.JacksonUtils;
 import com.starshop.constant.BucketConstant;
-import com.starshop.constant.DataConstant;
 import com.starshop.constant.RedisKeyConstant;
 import com.starshop.infrastructure.es.document.ProductDocument;
 import com.starshop.infrastructure.es.service.ProductDocumentService;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
-import com.starshop.infrastructure.redis.connect.StringRedisConnector;
 import com.starshop.mapper.ProductMapper;
-import com.starshop.pojo.entity.Product;
 import com.starshop.properties.RedisBucketTtlProperties;
 import com.starshop.properties.RedisCacheCountProperties;
 import com.starshop.service.ProductRedisCacheService;
@@ -26,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @Component
@@ -140,11 +133,11 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
             );
             try {
                 bucket.set(bucketSign, Duration.ofSeconds(redisBucketTtlProperties.getHotProductReadBucketTtl()));
-                String json = StringRedisConnector.opsForValue().get(idListKey);
-                if (json == null || json.isBlank()) {
+                Object idListObject = RedisConnector.opsForValue().get(idListKey);
+                if (idListObject == null) {
                     return Collections.emptyList();
                 }
-                return JacksonUtils.fromJson(json, new TypeReference<>() {});
+                return toIdList(idListObject);
             } catch (Exception e) {
                 log.error("查询redis热门商品ID列表失败", e);
                 RedisConnector.delete(idListKey);
@@ -161,11 +154,11 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
             );
             try {
                 bucketCopy.set(bucketSign, Duration.ofSeconds(redisBucketTtlProperties.getHotProductReadBucketTtl()));
-                String json = StringRedisConnector.opsForValue().get(idListCopyKey);
-                if (json == null || json.isBlank()) {
+                Object idListObject = RedisConnector.opsForValue().get(idListCopyKey);
+                if (idListObject == null) {
                     return Collections.emptyList();
                 }
-                return JacksonUtils.fromJson(json, new TypeReference<>() {});
+                return toIdList(idListObject);
             } catch (Exception e) {
                 log.error("查询redis热门商品ID副本列表失败", e);
                 RedisConnector.delete(idListCopyKey);
@@ -176,6 +169,19 @@ public class ProductRedisCacheServiceImpl implements ProductRedisCacheService {
             }
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * 把从 Redis 取出的商品 id 集合转成 List<Long>
+     */
+    private List<Long> toIdList(Object raw) {
+        if (!(raw instanceof Collection<?> collection)) {
+            return Collections.emptyList();
+        }
+        return collection.stream()
+                .filter(Objects::nonNull)
+                .map(item -> Long.valueOf(item.toString()))
+                .collect(Collectors.toList());
     }
 
     /**

@@ -3,8 +3,10 @@ package com.starshop.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.starshop.common.creation.SnowflakeIdGenerator;
 import com.starshop.common.mapstruct.CopyMapper;
+import com.starshop.constant.DataConstant;
 import com.starshop.constant.MessageConstant;
 import com.starshop.constant.RedisKeyConstant;
+import com.starshop.context.BaseContext;
 import com.starshop.infrastructure.redis.connect.RedisConnector;
 import com.starshop.mapper.CouponMapper;
 import com.starshop.pojo.dto.CouponCreateDTO;
@@ -12,6 +14,7 @@ import com.starshop.pojo.entity.Coupon;
 import com.starshop.pojo.entity.CouponUser;
 import com.starshop.pojo.enums.CouponUseStatusEnum;
 import com.starshop.pojo.enums.CouponValidModeEnum;
+import com.starshop.pojo.vo.CouponVO;
 import com.starshop.common.result.Result;
 import com.starshop.service.CouponService;
 import com.starshop.service.CouponUserService;
@@ -40,6 +43,11 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
     private final CouponUserService couponUserService;
 
     /**
+     * 领券后 N 天的券没配天数时的兜底有效期
+     */
+    private static final int DEFAULT_RECEIVE_VALID_DAYS = 7;
+
+    /**
      * 管理端添加优惠券
      * @param couponCreateDTO
      * @return
@@ -55,6 +63,144 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
         }
         return Result.success();
     }
+
+    /**
+     * 领券中心的优惠券列表
+     */
+    @Override
+    public Result<List<CouponVO>> getClaimableCouponList() {
+        Long userId = Long.valueOf(BaseContext.getUserId());
+
+        //查询优惠券
+        List<Coupon> couponList = lambdaQuery()
+                .eq(Coupon::getStatus, DataConstant.ONE_INT)
+                .eq(Coupon::getIsElimination, DataConstant.ZERO_INT)
+                .orderByAsc(Coupon::getId)
+                .list();
+        if (couponList.isEmpty()) {
+            return Result.success(new ArrayList<>(0));
+        }
+
+        //一次查出这个用户领过的券，避免逐张券去 count
+        List<Long> couponIdList = couponList.stream().map(Coupon::getId).toList();
+        Map<Long, Long> receivedCountMap = couponUserService.lambdaQuery()
+                .eq(CouponUser::getUserId, userId)
+                .in(CouponUser::getCouponId, couponIdList)
+                //已退回的不占用限领名额
+                .ne(CouponUser::getUseStatus, CouponUseStatusEnum.RETURNED.getCode())
+                .list()
+                .stream()
+                .collect(Collectors.groupingBy(CouponUser::getCouponId, Collectors.counting()));
+
+        List<CouponVO> couponVOList = couponList.stream().map(coupon -> {
+            //获取领取次数
+            int receivedCount = receivedCountMap.getOrDefault(coupon.getId(), 0L).intValue();
+            //判断是否领取完
+            boolean soldOut = isSoldOut(coupon);
+            //是否已经达到单人领券上限（为null或0时表示无限制）
+            boolean limitReached = coupon.getLimitPerPerson() != null
+                    && coupon.getLimitPerPerson() > 0
+                    && receivedCount >= coupon.getLimitPerPerson();
+            //映射
+            CouponVO couponVO = copyMapper.couponToCouponVO(coupon);
+
+            couponVO.setSoldOut(soldOut);
+            couponVO.setCanReceive(!soldOut && !limitReached);
+            couponVO.setUserReceivedCount(receivedCount);
+
+            return couponVO;
+        }).toList();
+
+        return Result.success(couponVOList);
+    }
+
+    /**
+     * 用户领取优惠券
+     */
+    @Override
+    public Result<?> receiveCoupon(Long couponId) {
+        if (Objects.isNull(couponId)) {
+            return Result.error(MessageConstant.DATA_ERROR);
+        }
+        Long userId = Long.valueOf(BaseContext.getUserId());
+        Coupon coupon = getById(couponId);
+        if (Objects.isNull(coupon)) {
+            return Result.error(MessageConstant.COUPON_NOT_EXISTS);
+        }
+        if (!coupon.getStatus().equals(DataConstant.ONE_INT)) {
+            return Result.error(MessageConstant.COUPON_NOT_RELEASING);
+        }
+        if (isSoldOut(coupon)) {
+            return Result.error(MessageConstant.COUPON_SOLD_OUT);
+        }
+        //查询用户领取该优惠券次数
+        Long receivedCount = couponUserService.lambdaQuery()
+                .eq(CouponUser::getUserId, userId)
+                .eq(CouponUser::getCouponId, couponId)
+                .ne(CouponUser::getUseStatus, CouponUseStatusEnum.RETURNED.getCode())
+                .count();
+        if (coupon.getLimitPerPerson() != null && coupon.getLimitPerPerson() > 0
+                && receivedCount >= coupon.getLimitPerPerson()) {
+            return Result.error(MessageConstant.COUPON_RECEIVE_LIMIT);
+        }
+
+        //个人有效期：固定时间券跟着券走，领券后N天的从领取时刻起算
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime validStart;
+        LocalDateTime validEnd;
+        if (CouponValidModeEnum.FIXED_TIME.getCode().equals(coupon.getValidMode())) {
+            validStart = coupon.getValidStart();
+            validEnd = coupon.getValidEnd();
+            if (Objects.nonNull(validEnd) && now.isAfter(validEnd)) {
+                return Result.error(MessageConstant.COUPON_EXPIRED);
+            }
+        } else {
+            validStart = now;
+            Integer receiveValidDays = coupon.getReceiveValidDays();
+            int validDays = (Objects.isNull(receiveValidDays) || receiveValidDays <= 0)
+                    ? DEFAULT_RECEIVE_VALID_DAYS : receiveValidDays;
+            validEnd = now.plusDays(validDays);
+        }
+
+        CouponUser couponUser = CouponUser.builder()
+                .userId(userId)
+                .couponId(couponId)
+                .validStart(validStart)
+                .validEnd(validEnd)
+                //还没到生效时间算未开始，否则直接算未用
+                .useStatus(validStart.isAfter(now)
+                        ? CouponUseStatusEnum.UN_BEGIN.getCode()
+                        : CouponUseStatusEnum.UNUSED.getCode())
+                .build();
+
+        if (!couponUserService.save(couponUser)) {
+            return Result.error(MessageConstant.SQL_MESSAGE_SAVE_ERROR);
+        }
+
+        //已领取数用 SQL 自增，避免并发下拿旧值覆盖
+        lambdaUpdate()
+                .eq(Coupon::getId, couponId)
+                .setSql("receive_quota = receive_quota + 1")
+                .update();
+
+        //复用缓存重建，把新领的券同步进 coupon:{id}:detail 和状态集合
+        updateCouponRedisCache();
+
+        return Result.success();
+    }
+
+    /**
+     * 库存是否已领完（总发行量为 0 或 null 表示不限量）
+     */
+    private static boolean isSoldOut(Coupon coupon) {
+        Integer totalQuota = coupon.getTotalQuota();
+        if (Objects.isNull(totalQuota) || totalQuota <= 0) {
+            return false;
+        }
+        Integer receiveQuota = Objects.isNull(coupon.getReceiveQuota()) ? 0 : coupon.getReceiveQuota();
+        return receiveQuota >= totalQuota;
+    }
+
 
     /**
      * 初始化更新优惠券缓存

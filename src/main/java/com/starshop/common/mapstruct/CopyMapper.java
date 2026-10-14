@@ -70,4 +70,5 @@ public interface CopyMapper {
     @Mapping(source = "id", target = "orderId")
     OrderWithTrackingVO orderToOrderWithTrackingVO(Order order);
 
+    CouponVO couponToCouponVO(Coupon coupon);
 }

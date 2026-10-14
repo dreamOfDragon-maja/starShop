@@ -1,6 +1,7 @@
 package com.starshop.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
  * 用户持有优惠券表
  */
 @Data
+@Builder
 @TableName("coupon_user")
 public class CouponUser {
 

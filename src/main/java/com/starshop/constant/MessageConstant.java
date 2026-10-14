@@ -30,6 +30,11 @@ public class MessageConstant {
     public static final String USER_NAME_NOT_NULL = "用户名不能为空";
     public static final String CONTENT_NOT_EXIST_ERROR = "删除的内容不存在";
     public static final String ORDER_NOT_FOUND = "订单不存在";
+    public static final String COUPON_NOT_EXISTS = "优惠券不存在";
+    public static final String COUPON_NOT_RELEASING = "该优惠券不在发放中";
+    public static final String COUPON_SOLD_OUT = "优惠券已被领完";
+    public static final String COUPON_RECEIVE_LIMIT = "您已达到该优惠券的领取上限";
+    public static final String COUPON_EXPIRED = "该优惠券已过期";
 
 
 }
